@@ -4,7 +4,6 @@ using Unity.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using TMPro;
-using UnityEngine.InputSystem.HID;
 using System;
 
 public class FileParser : MonoBehaviour
@@ -34,6 +33,17 @@ public class FileParser : MonoBehaviour
     {
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
         ss = GameObject.Find("EditorManager").GetComponent<SelectorScript>();
+    }
+    void handleError()
+    {
+        /*"There was an error parsing your file, here is a quick trouble shoot:
+         * 1. Your file not from TCS --> .GIZ files from games other than TCS may not be suitable for parsing.
+         * 2. Your file is unmodified from TCS --> See [link] for a list .GIZ files, if you see your file on the list, download the version listed. Otherwise, fill out the missing file form on the site.
+         * 3. Your file is modified from TCS --> You may have to redo some of your modifications. Follow the steps from option 2 or fill out this form: [link]
+         * 4. Your file is a custom .GIZ --> You can either attempt to adjust your file's formatting, or fill out the form linked in option 3.
+         * -NOTE-
+         * At the moment, your file is unable to be read by this software. You will not be able to open this file until either the file is adjusted/reformatted or until I update the parser to address these issues."
+        */
     }
     public void startLoadGizmos()
     {
@@ -77,6 +87,10 @@ public class FileParser : MonoBehaviour
     {
         return (_bytes * 3);
     }
+    static int B(uint _bytes)
+    {
+        return ((int)_bytes * 3);
+    }
 
     Vector3 fixNegativeScale(Vector3 scl)
     {
@@ -87,10 +101,10 @@ public class FileParser : MonoBehaviour
     public void readObstacles()
     {
         int afterHead = getPosAfter(TypeConverter.getHeader("GizObstacle"));
-        int numBytes = gm.FSliceInt32(afterHead);
+        uint numBytes = gm.FSliceInt32(afterHead);
         //Header extra
-        int unknownNum = gm.FSliceInt8(afterHead+B(4));
-        int numObstacles = gm.FSliceInt16(afterHead+B(5));
+        uint unknownNum = gm.FSliceInt8(afterHead+B(4));
+        uint numObstacles = gm.FSliceInt16(afterHead+B(5));
         //
         int startData;
         if (unknownNum == 10 || unknownNum == 14) { startData = afterHead + B(7); }
@@ -118,13 +132,13 @@ public class FileParser : MonoBehaviour
             readLocation += skipBytes+B(40);
             //CHILDREN
             List<GameObject> childList = new List<GameObject>();
-            int numChildren = gm.FSliceInt8(readLocation + B(2));
+            uint numChildren = gm.FSliceInt8(readLocation + B(2));
 
             readLocation += B(3);
             for(int rc2=0; rc2<numChildren; rc2++)
             {
                 //Parsing child data
-                int nameLength = gm.FSliceInt8(readLocation);
+                uint nameLength = gm.FSliceInt8(readLocation);
                 string cName = gm.FSliceString(readLocation + B(1), nameLength);
 
                 //preparing to instantiate child
@@ -181,9 +195,9 @@ public class FileParser : MonoBehaviour
     public void readForces()
     {
         int afterHead = getPosAfter(TypeConverter.getHeader("GizForce"));
-        int numBytes = gm.FSliceInt32(afterHead);
-        int unknown1 = gm.FSliceInt8(afterHead+B(4));
-        int unknown2 = gm.FSliceInt8(afterHead+B(5));
+        uint numBytes = gm.FSliceInt32(afterHead);
+        uint unknown1 = gm.FSliceInt8(afterHead+B(4));
+        uint unknown2 = gm.FSliceInt8(afterHead+B(5));
         //Header extra
         //int numObjs = 0;
         //
@@ -209,13 +223,13 @@ public class FileParser : MonoBehaviour
             _g.range = gm.FSliceFloat32(readLocation + B(36));
             readLocation += B(40);
             _g.darkSide = gm.fhex[readLocation]=='1';
-            _g.endState = int.Parse(gm.fhex[readLocation + 1].ToString());
+            _g.endState = uint.Parse(gm.fhex[readLocation + 1].ToString());
             //Unknown 4 bytes
             //Unknown 3 bytes
             readLocation += B(8);
 
             //Child data
-            int numForceChildren = gm.FSliceInt8(readLocation);
+            uint numForceChildren = gm.FSliceInt8(readLocation);
             readLocation += B(1);
             for(int rc2=0; rc2<numForceChildren; rc2++)
             {
@@ -225,7 +239,7 @@ public class FileParser : MonoBehaviour
                 _child.name = "forcechild_" + rc2;
 
                 //Parse child info
-                int childNameLength = gm.FSliceInt8(readLocation);
+                uint childNameLength = gm.FSliceInt8(readLocation);
                 _gfc.gizName = gm.FSliceString(readLocation + B(1), childNameLength);
                 readLocation += B(childNameLength + 1);
                 readLocation += B(8); //Unknown 8 bytes
@@ -243,7 +257,7 @@ public class FileParser : MonoBehaviour
             _g.effectScale = gm.FSliceFloat32(readLocation);
             readLocation += B(8); //Unknown 4 bytes
 
-            int unknownStringLength = gm.FSliceInt8(readLocation);
+            uint unknownStringLength = gm.FSliceInt8(readLocation);
             string unknownString = gm.FSliceString(readLocation + B(1), unknownStringLength);
             readLocation += B(unknownStringLength + 1);
 
@@ -255,7 +269,7 @@ public class FileParser : MonoBehaviour
             readLocation += B(16);
 
             List<string> _sfx = new();
-            int sfxNameLength = gm.FSliceInt8(readLocation);
+            uint sfxNameLength = gm.FSliceInt8(readLocation);
             readLocation += B(1);
             while (sfxNameLength != 0)
             {
@@ -274,10 +288,10 @@ public class FileParser : MonoBehaviour
     public void readPickups()
     {
         int afterHead = getPosAfter(TypeConverter.getHeader("GizmoPickup"));
-        int numBytes = gm.FSliceInt32(afterHead);
+        uint numBytes = gm.FSliceInt32(afterHead);
         //Header extra
-        int unknownNum = gm.FSliceInt32(afterHead + B(4));
-        int numPickups = gm.FSliceInt32(afterHead + B(8));
+        uint unknownNum = gm.FSliceInt32(afterHead + B(4));
+        uint numPickups = gm.FSliceInt32(afterHead + B(8));
         //
         int startData;
         if (unknownNum == 7) { startData = afterHead + B(24); }
@@ -311,10 +325,10 @@ public class FileParser : MonoBehaviour
     void readPanels()
     {
         int afterHead = getPosAfter(TypeConverter.getHeader("Panel"));
-        int numBytes = gm.FSliceInt32(afterHead);
+        uint numBytes = gm.FSliceInt32(afterHead);
         //Header extra
-        int unknownNum = gm.FSliceInt32(afterHead+B(4));
-        int numPanels = gm.FSliceInt32(afterHead+B(8));
+        uint unknownNum = gm.FSliceInt32(afterHead+B(4));
+        uint numPanels = gm.FSliceInt32(afterHead+B(8));
         //
         int startData;
         if (unknownNum == 8) { startData = afterHead + B(12); }
@@ -324,13 +338,13 @@ public class FileParser : MonoBehaviour
         for (int rp = 0; rp < numPanels; rp++)
         {
             //Parsing panel data
-            int nameLength = gm.FSliceInt32(readLocation);
+            uint nameLength = gm.FSliceInt32(readLocation);
             string panelName = gm.FSliceString(readLocation+B(4),nameLength);
             readLocation += B(4 + nameLength);
             Vector3 panelPos = new(gm.FSliceFloat32(readLocation),gm.FSliceFloat32(readLocation+B(4)), gm.FSliceFloat32(readLocation + B(8)));
             readLocation += B(12);
             float rotation = TypeConverter.Int8AngleToFloat(gm.FSliceInt8(readLocation + B(1)));
-            int ptype = gm.FSliceInt8(readLocation+B(2));
+            uint ptype = gm.FSliceInt8(readLocation+B(2));
             readLocation += B(4);
             Vector3 trigPos = new(gm.FSliceFloat32(readLocation), gm.FSliceFloat32(readLocation + B(4)), gm.FSliceFloat32(readLocation + B(8)));
             float trigScale = gm.FSliceFloat32(readLocation + B(12));
@@ -358,5 +372,182 @@ public class FileParser : MonoBehaviour
             Instantiate(pPrefab);
 
         }
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //==============================================COMPILING==============================================
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    string cHex = "";
+    public string CompileGizmos()
+    {
+        cHex = "";
+        if (gm.fhex != "") //TEMPORARY, NEED TO BE ABLE TO MAKE BLANK .GIZ BEFORE REMOVE
+        {
+            compileObstacles();
+            compileBuildit();
+            compileForce();
+            compileBlowup();
+            compilePickups();
+            compileLever();
+            compileSpinner();
+            compileMinicut();
+            compileTube();
+            compileZipup();
+            compileTurret();
+            compileBombGenerator();
+            compilePanel();
+            compileHatMachine();
+            compilePushBlocks();
+            compileTorpMachine();
+            compileShadowEditor();
+            compileGrapple();
+            compilePlug();
+            compileTechno();
+        }
+
+        return cHex;
+    }
+
+    //==============================================PICKUPS==============================================
+    void compileObstacles()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[0]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(15), B(15 + numBytes));
+        cHex += section;
+    }
+    void compileBuildit()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[1]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(14), B(14 + numBytes));
+        cHex += section;
+    }
+    void compileForce()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[2]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(12), B(12 + numBytes));
+        cHex += section;
+    }
+    void compileBlowup()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[3]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(10), B(10 + numBytes));
+        cHex += section;
+    }
+    void compilePickups()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[4]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string pickupSection = gm.fhex.Substring(afterHead-B(15),B(15+numBytes));
+        cHex += pickupSection;
+    }
+    void compileLever()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[5]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(9), B(9 + numBytes));
+        cHex += section;
+    }
+    void compileSpinner()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[6]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(11), B(11 + numBytes));
+        cHex += section;
+    }
+    void compileMinicut()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[7]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(11), B(11 + numBytes));
+        cHex += section;
+    }
+    void compileTube()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[8]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(8), B(8 + numBytes));
+        cHex += section;
+    }
+    void compileZipup()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[9]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(9), B(9 + numBytes));
+        cHex += section;
+    }
+    void compileTurret()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[10]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(13), B(13 + numBytes));
+        cHex += section;
+    }
+    void compileBombGenerator()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[11]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(18), B(18 + numBytes));
+        cHex += section;
+    }
+    void compilePanel()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[12]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(9), B(9 + numBytes));
+        cHex += section;
+    }
+    void compileHatMachine()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[13]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(14), B(14 + numBytes));
+        cHex += section;
+    }
+    void compilePushBlocks()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[14]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(14), B(14 + numBytes));
+        cHex += section;
+    }
+    void compileTorpMachine()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[15]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(16), B(16 + numBytes));
+        cHex += section;
+    }
+    void compileShadowEditor()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[16]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(16), B(16 + numBytes));
+        cHex += section;
+    }
+    void compileGrapple()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[17]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(11), B(11 + numBytes));
+        cHex += section;
+    }
+    void compilePlug()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[18]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(8), B(8 + numBytes));
+        cHex += section;
+    }
+    void compileTechno()
+    {
+        int afterHead = getPosAfter(TypeConverter.headerHex[19]);
+        uint numBytes = gm.FSliceInt32(afterHead);
+        string section = gm.fhex.Substring(afterHead - B(10), B(10 + numBytes));
+        cHex += section;
     }
 }

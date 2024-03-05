@@ -12,6 +12,9 @@ TagManager:
   - IntProp
   - Vec3Prop
   - DropProp
+  - BoolProp
+  - UnknownProp
+  - ChildProp
   layers:
   - Default
   - TransparentFX

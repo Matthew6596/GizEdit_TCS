@@ -14,7 +14,9 @@ public class GizmoPickup : MonoBehaviour
     MeshFilter mfilter;
     MeshCollider mcollider;
 
-    string pickupTypes = "sgbpmcuhrt";
+    static public string pickupTypes = "sgbpmcuhrt";
+    static public string[] pickupTypeNames = { "Silver Stud", "Gold Stud", "Blue Stud", "Purple Stud",
+        "Minikit", "Challenge Minikit", "Power Up", "Heart", "Red Brick", "Torpedo" };
 
     // Start is called before the first frame update
     void Start()

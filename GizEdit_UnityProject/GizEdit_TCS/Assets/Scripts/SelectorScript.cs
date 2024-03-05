@@ -5,7 +5,6 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
 using SFB;
-using UnityEditor.PackageManager;
 using System;
 
 public class SelectorScript : MonoBehaviour
@@ -23,6 +22,7 @@ public class SelectorScript : MonoBehaviour
     public GameObject loadingStuff,loadingBar;
     public GameObject propsPanel;
     public Transform propsSection;
+    public GameObject[] propPrefabs;
 
     List<GameObject> props = new();
     List<object> propVals = new();
@@ -33,6 +33,7 @@ public class SelectorScript : MonoBehaviour
     List<GameObject> gizmos = new();
     GameObject selectedGizmo;
     GameObject player;
+    string gizPath;
     //undos
     List<string> undoStack = new();
 
@@ -47,7 +48,7 @@ public class SelectorScript : MonoBehaviour
         fp = GameObject.Find("GizParser").GetComponent<FileParser>();
         player = gm.player;
         for (int i = 1; i < propsSection.childCount; i++) props.Add(propsSection.GetChild(i).gameObject);
-        setProps();
+        //setProps();
         barImg = loadingBar.GetComponent<Image>();
     }
 
@@ -147,9 +148,12 @@ public class SelectorScript : MonoBehaviour
         string path = (paths.Length>0)?paths[0]:"";
         if (path.Length != 0)
         {
+            gizPath = path[..(path.LastIndexOf(@"\")+1)];
+            Debug.Log("Yuh: " + gizPath);
             byte[] fbytes = System.IO.File.ReadAllBytes(path);
             Debug.Log("File Selected: "+path);
             loadingStuff.SetActive(true);
+            changeLoadText("LOADING...");
             StartCoroutine(delayOpenFile(fbytes));
             //fp.startLoadGizmos();
         }
@@ -159,6 +163,38 @@ public class SelectorScript : MonoBehaviour
         }
     }
     public void ExportFile()
+    {
+        loadingStuff.SetActive(true);
+        changeLoadText("COMPILING...");
+        string cHex = fp.CompileGizmos();
+        StartCoroutine(hextobytes(cHex));
+    }
+    IEnumerator hextobytes(string _h)
+    {
+        int _l = _h.Length / 3;
+        byte[] _b = new byte[_l];
+        for (int i = 0; i < _l; i++)
+        {
+            _b[i] = Convert.ToByte(TypeConverter.HexToInt8(_h.Substring(i * 3, 3)));
+            if (i % 2000 == 0) { barImg.fillAmount = (float)i / _l; yield return null; }
+        }
+        finishExport(_b);
+    }
+    void finishExport(byte[] compiledBytes)
+    {
+        StandaloneFileBrowserWindows sfbw = new(); //YOOOOOOOOOOOOOO CHANGE FOR MAC / LINUX BUILDS
+        string[] paths = sfbw.OpenFolderPanel("Gizmo File Export", "", false);
+        string path = (paths.Length > 0) ? paths[0] : "";
+        string gizFileName = @"\yuh.GIZ";
+        path += gizFileName;
+
+        if (path.Length != 0)
+        {
+            System.IO.File.WriteAllBytes(path, compiledBytes);
+        }
+        loadingStuff.SetActive(false);
+    }
+    public void FinishExport()
     {
 
     }
@@ -189,81 +225,7 @@ public class SelectorScript : MonoBehaviour
     }
     public void SetPropertiesMenu()
     {
-        int giztype = -1;
-        if (selectedGizmo.GetComponent<GizmoPickup>() != null) giztype = 4;
-        for (int i = 0; i < props.Count; i++) props[i].SetActive(false);
-        switch (giztype)
-        {
-            case (0): //Obstacles
-                
-                break;
-            case (1): //build it
-                
-                break;
-            case (2): //force
-                
-                break;
-            case (3): //blowup
-                
-                break;
-            case (4): //pick up
-                GizmoPickup _pickup = selectedGizmo.GetComponent<GizmoPickup>();
-                string _pickuptypes = "sgbpmcuhrt";
-                props[0].SetActive(true);
-                props[2].SetActive(true);
-                props[3].SetActive(true);
-                ((TMP_InputField)propVals[0]).text = _pickup.pickupName;
-                ((List<TMP_InputField>)propVals[2])[0].text = _pickup.transform.position.x.ToString();
-                ((List<TMP_InputField>)propVals[2])[1].text = _pickup.transform.position.y.ToString();
-                ((List<TMP_InputField>)propVals[2])[2].text = _pickup.transform.position.z.ToString();
-                ((TMP_Dropdown)propVals[3]).value = _pickuptypes.IndexOf(_pickup.pickupType);
-                break;
-            case (5): //lever
-                
-                break;
-            case (6): //spinner
-                
-                break;
-            case (7): //minicut
-                
-                break;
-            case (8): //tube
-                
-                break;
-            case (9): //zipup
-                
-                break;
-            case (10): //turret
-                
-                break;
-            case (11): //bomb generator
-                
-                break;
-            case (12): //panel
-                
-                break;
-            case (13): //hat machine
-                
-                break;
-            case (14): //push blocks
-                
-                break;
-            case (15): //torp machine
-                
-                break;
-            case (16): //shadow editor
-                
-                break;
-            case (17): //grapple
-                
-                break;
-            case (18): //plug
-                
-                break;
-            case (19): //techno
-                
-                break;
-        }
+        StartCoroutine(setPropsMenu());
     }
     public void SetSelectedProperties()
     {
@@ -305,38 +267,107 @@ public class SelectorScript : MonoBehaviour
         return (Vector3.Distance(player.transform.position,selectedGizmo.transform.position)*0.03f);
     }
 
-    void setProps()
+    GameObject getPropPrefab(string tagname) //this function reminds me of javascript :(
     {
-        for(int i=0; i<props.Count; i++)
+        switch (tagname)
         {
-            if (props[i].CompareTag("StringProp"))
-            {
-                propVals.Add(props[i].transform.GetChild(1).gameObject.GetComponent<TMP_InputField>());
-            }
-            else if (props[i].CompareTag("FloatProp"))
-            {
-                propVals.Add(props[i].transform.GetChild(1).gameObject.GetComponent<TMP_InputField>());
-            }
-            else if (props[i].CompareTag("IntProp"))
-            {
-                propVals.Add(props[i].transform.GetChild(1).gameObject.GetComponent<TMP_InputField>());
-            }
-            else if (props[i].CompareTag("Vec3Prop"))
-            {
-                TMP_InputField _x = props[i].transform.GetChild(1).gameObject.GetComponent<TMP_InputField>();
-                TMP_InputField _y = props[i].transform.GetChild(2).gameObject.GetComponent<TMP_InputField>();
-                TMP_InputField _z = props[i].transform.GetChild(3).gameObject.GetComponent<TMP_InputField>();
-                List<TMP_InputField> _t = new(){_x,_y,_z};
-                propVals.Add(_t);
-            }
-            else if (props[i].CompareTag("DropProp"))
-            {
-                propVals.Add(props[i].transform.GetChild(1).gameObject.GetComponent<TMP_Dropdown>());
-            }
-            else
-            {
-                Debug.Log("ERROR: Unknown property type");
-            }
+            case ("StringProp"): return propPrefabs[0];
+            case ("FloatProp"): return propPrefabs[1];
+            case ("IntProp"): return propPrefabs[2];
+            case ("BoolProp"): return propPrefabs[3];
+            case ("DropProp"): return propPrefabs[4];
+            case ("Vec3Prop"): return propPrefabs[5];
+            case ("ChildProp"): return propPrefabs[6];
+            case ("UnknownProp"): return propPrefabs[7];
+            default: Debug.Log("Error: Invalid prefab type"); return null;
+        }
+    }
+    GameObject InstantiateProp(string tagname)
+    {
+        return Instantiate(getPropPrefab(tagname),propsSection);
+    }
+
+    IEnumerator setPropsMenu()
+    {
+        int giztype = -1;
+        if (selectedGizmo.GetComponent<GizmoPickup>() != null) giztype = 4;
+        for (int i = propsSection.childCount - 1; i >= 0; i--) Destroy(propsSection.GetChild(i).gameObject); //clear properties
+        switch (giztype)
+        {
+            case (0): //Obstacles
+
+                break;
+            case (1): //build it
+
+                break;
+            case (2): //force
+                GizForce _force = selectedGizmo.GetComponent<GizForce>();
+                break;
+            case (3): //blowup
+
+                break;
+            case (4): //pick up
+                //Create property fields
+                GameObject pickup_name = InstantiateProp("StringProp");
+                GameObject pickup_position = InstantiateProp("Vec3Prop");
+                GameObject pickup_type = InstantiateProp("DropProp");
+                yield return null;
+                TypeConverter.Prop_SetLabel(pickup_name, "Gizmo Name");
+                TypeConverter.Prop_SetLabel(pickup_position, "Position");
+                TypeConverter.Prop_SetLabel(pickup_type, "Pickup Type");
+
+                //Set properties data
+                GizmoPickup _pickup = selectedGizmo.GetComponent<GizmoPickup>();
+
+                TypeConverter.Prop_SetInputField<string>(pickup_name, _pickup.pickupName);
+                TypeConverter.Prop_SetVec3(pickup_position, _pickup.transform.position);
+                TypeConverter.Prop_SetDropdown(pickup_type, GizmoPickup.pickupTypeNames, GizmoPickup.pickupTypes.IndexOf(_pickup.pickupType));
+                break;
+            case (5): //lever
+
+                break;
+            case (6): //spinner
+
+                break;
+            case (7): //minicut
+
+                break;
+            case (8): //tube
+
+                break;
+            case (9): //zipup
+
+                break;
+            case (10): //turret
+
+                break;
+            case (11): //bomb generator
+
+                break;
+            case (12): //panel
+
+                break;
+            case (13): //hat machine
+
+                break;
+            case (14): //push blocks
+
+                break;
+            case (15): //torp machine
+
+                break;
+            case (16): //shadow editor
+
+                break;
+            case (17): //grapple
+
+                break;
+            case (18): //plug
+
+                break;
+            case (19): //techno
+
+                break;
         }
     }
 }

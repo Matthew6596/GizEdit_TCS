@@ -12,7 +12,7 @@ public class GizForce : MonoBehaviour
     public float shakeTime = 0f;
     public float range = 0f;
     public bool darkSide = false;
-    public int endState = 0;
+    public uint endState = 0;
     //unknown1
     public List<GameObject> childrenList = new();
     public float forceSpeed = 1f;
@@ -20,8 +20,8 @@ public class GizForce : MonoBehaviour
     //unknown2
     public float effectScale = 1f;
     //unknown3
-    public int minStudValue = 0;
-    public int maxStudValue = 0;
+    public uint minStudValue = 0;
+    public uint maxStudValue = 0;
     //unknown4
     public Vector3 studSpawnPosition = Vector3.zero;
     public float studSpeed = 1.75f;

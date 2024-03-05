@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.IO;
 using System;
+using TMPro;
 
 public class TypeConverter : MonoBehaviour
 {
-    static public string Int8ToHex(int n)
+    static public string Int8ToHex(uint n)
     {
         string r="";
 
@@ -104,8 +104,31 @@ public class TypeConverter : MonoBehaviour
         else if (titleName == "Techno") { return "06 00 00 00 54 65 63 68 6E 6F "; }
         else { return ""; }
     }
+    static public string[] headerHex =
+    {
+        "0B 00 00 00 47 69 7A 4F 62 73 74 61 63 6C 65 ",
+        "0A 00 00 00 47 69 7A 42 75 69 6C 64 69 74 ",
+        "08 00 00 00 47 69 7A 46 6F 72 63 65 ",
+        "06 00 00 00 62 6C 6F 77 75 70 ",
+        "0B 00 00 00 47 69 7A 6D 6F 50 69 63 6B 75 70 ",
+        "05 00 00 00 4C 65 76 65 72 ",
+        "07 00 00 00 53 70 69 6E 6E 65 72 ",
+        "07 00 00 00 4D 69 6E 69 43 75 74 ",
+        "04 00 00 00 54 75 62 65 ",
+        "05 00 00 00 5A 69 70 55 70 ",
+        "09 00 00 00 47 69 7A 54 75 72 72 65 74 ",
+        "0D 00 00 00 42 6F 6D 62 47 65 6E 65 72 61 74 6F 72 ",
+        "05 00 00 00 50 61 6E 65 6C ",
+        "0A 00 00 00 48 61 74 4D 61 63 68 69 6E 65 ",
+        "0A 00 00 00 50 75 73 68 42 6C 6F 63 6B 73 ",
+        "0C 00 00 00 54 6F 72 70 20 4D 61 63 68 69 6E 65 ",
+        "0C 00 00 00 53 68 61 64 6F 77 45 64 69 74 6F 72 ",
+        "07 00 00 00 47 72 61 70 70 6C 65 ",
+        "04 00 00 00 50 6C 75 67 ",
+        "06 00 00 00 54 65 63 68 6E 6F ",
+    };
 
-    static public int hexCharToInt(int _char)
+    static public uint hexCharToInt(uint _char)
     {
         switch (_char)
         {
@@ -129,35 +152,44 @@ public class TypeConverter : MonoBehaviour
         return _char;
     }
 
-    static public int HexToInt8(string _h)
+    static public uint HexToInt8(string _h)
     {
-        int _v1 = hexCharToInt(_h[0]);
-        int _v2 = hexCharToInt(_h[1]);
+        uint _v1 = hexCharToInt(_h[0]);
+        uint _v2 = hexCharToInt(_h[1]);
         return (_v1 * 16) + _v2;
     }
 
-    static public int HexToInt16(string _h)
+    static public uint HexToInt16(string _h)
     {
-        int _v1 = hexCharToInt(_h[0]);
-        int _v2 = hexCharToInt(_h[1]);
-        int _v3 = hexCharToInt(_h[3]);
-        int _v4 = hexCharToInt(_h[4]);
+        uint _v1 = hexCharToInt(_h[0]);
+        uint _v2 = hexCharToInt(_h[1]);
+        uint _v3 = hexCharToInt(_h[3]);
+        uint _v4 = hexCharToInt(_h[4]);
         _v1 *= 16;
         _v3 *= 4096;
         _v4 *= 256;
         return (_v1 + _v2 + _v3 + _v4);
     }
 
-    static public int HexToInt32(string _h)
+    static public string Int16ToHex(uint _n)
     {
-        int _v1 = hexCharToInt(_h[0]);
-        int _v2 = hexCharToInt(_h[1]);
-        int _v3 = hexCharToInt(_h[3]);
-        int _v4 = hexCharToInt(_h[4]);
-        int _v5 = hexCharToInt(_h[6]);
-        int _v6 = hexCharToInt(_h[7]);
-        int _v7 = hexCharToInt(_h[9]);
-        int _v8 = hexCharToInt(_h[10]);
+        uint _v1 = _n % 256;
+        uint _v2 = _n - _v1;
+        string _h1 = Int8ToHex(_v1);
+        string _h2 = Int8ToHex(_v2/256);
+        return (_h2+" " + _h1 + " ");
+    }
+
+    static public uint HexToInt32(string _h)
+    {
+        uint _v1 = hexCharToInt(_h[0]);
+        uint _v2 = hexCharToInt(_h[1]);
+        uint _v3 = hexCharToInt(_h[3]);
+        uint _v4 = hexCharToInt(_h[4]);
+        uint _v5 = hexCharToInt(_h[6]);
+        uint _v6 = hexCharToInt(_h[7]);
+        uint _v7 = hexCharToInt(_h[9]);
+        uint _v8 = hexCharToInt(_h[10]);
         _v1 *= 16;
         _v3 *= 4096;
         _v4 *= 256;
@@ -166,6 +198,15 @@ public class TypeConverter : MonoBehaviour
         _v7 *= 268435456;
         _v8 *= 16777216;
         return (_v1 + _v2 + _v3 + _v4 + _v5 + _v6 + _v7 + _v8);
+    }
+
+    static public string Int32ToHex(uint _n)
+    {
+        uint v1 = _n % 65536;
+        uint v2 = _n - v1;
+        string h1 = Int16ToHex(v1);
+        string h2 = Int16ToHex(v2/65536);
+        return (h2 + h1);
     }
 
     static public float HexToFloat32(string _h, bool round = false)
@@ -178,14 +219,17 @@ public class TypeConverter : MonoBehaviour
         byte[] floatVals = BitConverter.GetBytes(num);
         float f = BitConverter.ToSingle(floatVals, 0);
 
-        if (round)
-        {
-            f *= 1000;
-            int converty = (int)f;
-            f = (float)converty;
-            f /= 1000;
-        }
+        if (round){f = Mathf.Round(f*1000)/1000;}
         return f;
+    }
+
+    static public string Float32ToHex(float _n)
+    {
+        var bytes = BitConverter.GetBytes(_n);
+        var i = BitConverter.ToInt32(bytes, 0);
+        string _h = i.ToString("X8");
+        string h1=_h[..2], h2=_h.Substring(2,2),h3=_h.Substring(4,2),h4=_h.Substring(6,2);
+        return (h1 + " " + h2 + " " + h3 + " " + h4 + " ");
     }
 
     static public string HexToString(string _h)
@@ -195,7 +239,7 @@ public class TypeConverter : MonoBehaviour
         {
             if (_h[j] == ' ') j++;
             if (j >= _h.Length) break;
-            int _c = HexToInt8(_h.Substring(j, 2));
+            uint _c = HexToInt8(_h.Substring(j, 2));
             char strChar = (char)_c;
             ret += strChar;
             j++;
@@ -203,8 +247,54 @@ public class TypeConverter : MonoBehaviour
         return ret;
     }
 
-    static public float Int8AngleToFloat(int angle)
+    static public string StringToHex(string _h)
+    {
+        string ret = "";
+        for(int j=0; j<_h.Length; j++)
+        {
+            char strChar = _h[j];
+            uint _c = strChar;
+            ret += Int8ToHex(_c) + " ";
+        }
+        return ret;
+    }
+
+    static public float Int8AngleToFloat(uint angle)
     {
         return ((float)angle * 360f) / 256f;
+    }
+    static public uint FloatToInt8Angle(float angle)
+    {
+        return (uint)(angle * 256 / 360);
+    }
+
+    static public void Prop_SetLabel(GameObject _prop, string _txt)
+    {
+        _prop.transform.GetChild(0).GetChild(0).gameObject.GetComponent<TMP_Text>().text = _txt;
+    }
+    static public void Prop_SetInputField<T>(GameObject _prop, T _val)
+    {
+        _prop.transform.GetChild(1).gameObject.GetComponent<TMP_InputField>().text = _val.ToString();
+    }
+    static public void Prop_SetDropdown(GameObject _prop, string[] _options, int _selectedVal = 0)
+    {
+        TMP_Dropdown _d = _prop.transform.GetChild(1).gameObject.GetComponent<TMP_Dropdown>();
+        //_d.ClearOptions();
+        List<TMP_Dropdown.OptionData> _ol = new();
+        for(int _i=0; _i<_options.Length; _i++)
+        {
+            TMP_Dropdown.OptionData _o = new();
+            _o.text = _options[_i];
+            _ol.Add(_o);
+        }
+        _d.options = _ol;
+        _d.value = _selectedVal;
+    }
+    static public void Prop_SetVec3(GameObject _prop, Vector3 _vec)
+    {
+        Transform _p = _prop.transform;
+        _p.GetChild(1).gameObject.GetComponent<TMP_InputField>().text = _vec.x.ToString();
+        _p.GetChild(2).gameObject.GetComponent<TMP_InputField>().text = _vec.y.ToString();
+        _p.GetChild(3).gameObject.GetComponent<TMP_InputField>().text = _vec.z.ToString();
     }
 }

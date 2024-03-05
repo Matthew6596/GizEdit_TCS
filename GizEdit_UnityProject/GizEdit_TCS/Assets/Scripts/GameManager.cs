@@ -42,11 +42,18 @@ public class GameManager : MonoBehaviour
     }
 
     //basically substring, shorter to type in FileParser
-    public int FSliceInt8(int start){return TypeConverter.HexToInt8(fhex.Substring(start, B(1)));}
-    public int FSliceInt16(int start){return TypeConverter.HexToInt16(fhex.Substring(start, B(2)));}
-    public int FSliceInt32(int start){return TypeConverter.HexToInt32(fhex.Substring(start, B(4)));}
+    public uint FSliceInt8(int start){return TypeConverter.HexToInt8(fhex.Substring(start, B(1)));}
+    public uint FSliceInt16(int start){return TypeConverter.HexToInt16(fhex.Substring(start, B(2)));}
+    public uint FSliceInt32(int start){return TypeConverter.HexToInt32(fhex.Substring(start, B(4)));}
     public float FSliceFloat32(int start){return TypeConverter.HexToFloat32(fhex.Substring(start, B(4)));}
     public string FSliceString(int start, int length){return TypeConverter.HexToString(fhex.Substring(start, B(length)));}
+    public uint FSliceInt8(uint start) { return TypeConverter.HexToInt8(fhex.Substring((int)start, B(1))); }
+    public uint FSliceInt16(uint start) { return TypeConverter.HexToInt16(fhex.Substring((int)start, B(2))); }
+    public uint FSliceInt32(uint start) { return TypeConverter.HexToInt32(fhex.Substring((int)start, B(4))); }
+    public float FSliceFloat32(uint start) { return TypeConverter.HexToFloat32(fhex.Substring((int)start, B(4))); }
+    public string FSliceString(uint start, int length) { return TypeConverter.HexToString(fhex.Substring((int)start, B(length))); }
+    public string FSliceString(int start, uint length) { return TypeConverter.HexToString(fhex.Substring(start, B((int)length))); }
+    public string FSliceString(uint start, uint length) { return TypeConverter.HexToString(fhex.Substring((int)start, B((int)length))); }
 
     static int B(int _bytes)
     {
