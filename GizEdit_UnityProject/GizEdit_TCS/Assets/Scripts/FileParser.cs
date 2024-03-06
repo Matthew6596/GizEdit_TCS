@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using TMPro;
 using System;
+using System.Runtime.InteropServices.ComTypes;
 
 public class FileParser : MonoBehaviour
 {
@@ -47,9 +48,9 @@ public class FileParser : MonoBehaviour
     }
     public void startLoadGizmos()
     {
-        //readObstacles(); <<very lag for some reason
+        //readObstacles();
         //Read build its
-        readForces();
+        //readForces();
         //Read blowups
         readPickups();
         //Read lever
@@ -59,7 +60,7 @@ public class FileParser : MonoBehaviour
         //Read zipup
         //Read turret
         //Read Bomb Generator
-        readPanels();
+        //readPanels();
         //Read Hat machine
         //Read push blocks
         //Read torp machine
@@ -96,6 +97,10 @@ public class FileParser : MonoBehaviour
     {
         return new Vector3(Mathf.Abs(scl.x),Mathf.Abs(scl.y),Mathf.Abs(scl.z));
     }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //===============================================READING===============================================
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     //==============================================OBSTACLES==============================================
     public void readObstacles()
@@ -306,9 +311,12 @@ public class FileParser : MonoBehaviour
             float pickupX = gm.FSliceFloat32(readLocation + B(8));
             float pickupY = gm.FSliceFloat32(readLocation + B(12));
             float pickupZ = gm.FSliceFloat32(readLocation + B(16));
-            string pickupType = gm.FSliceString(readLocation+B(20), 3);
+            string pickupType = gm.FSliceString(readLocation+B(20), 1);
+            uint spawnType = gm.FSliceInt8(readLocation+B(21));
+            uint spawnGroup = gm.FSliceInt8(readLocation+B(22));
             char ptype = pickupType[0];
-            if(ptype!='s'&&ptype != 'g' && ptype != 'b' && ptype != 'p' && ptype != 'm' && ptype != 'r' && ptype != 'u' && ptype != 'h' && ptype != 'c' && ptype != 't') { Debug.Log("UNKNOWN PICKUP: " + ptype); return; }
+            if(ptype!='s'&&ptype != 'g' && ptype != 'b' && ptype != 'p' && ptype != 'm' && ptype != 'r' && ptype != 'u' && ptype != 'h' && ptype != 'c' && ptype != 't') { Debug.Log("UNKNOWN PICKUP TYPE: " + ptype); return; }
+            if (spawnType != 0 && spawnType != 2) { Debug.Log("UNKNOWN PICKUP SPAWN TYPE: " + spawnType); return; }
 
             //Creating Pickup Object
             GameObject _pickupObj = new();
@@ -317,6 +325,8 @@ public class FileParser : MonoBehaviour
             _pickupObj.transform.position = new Vector3(pickupX, pickupY, pickupZ);
             _props.pickupName = pickupName;
             _pickupObj.name = "pickup_"+rp;
+            _props.spawnType = spawnType;
+            _props.spawnGroup = spawnGroup;
 
             readLocation += B(8 + 12 + 3);
         }
@@ -379,9 +389,9 @@ public class FileParser : MonoBehaviour
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     string cHex = "";
-    public string CompileGizmos()
+    public string CompileGizmos() //MISSING 87 BYTES OF DATA
     {
-        cHex = "";
+        cHex = "01 00 00 00 ";
         if (gm.fhex != "") //TEMPORARY, NEED TO BE ABLE TO MAKE BLANK .GIZ BEFORE REMOVE
         {
             compileObstacles();
@@ -405,149 +415,201 @@ public class FileParser : MonoBehaviour
             compilePlug();
             compileTechno();
         }
+        cHex += "00 00 00 00 ";
 
         return cHex;
     }
 
-    //==============================================PICKUPS==============================================
+    //==============================================OBSTACLE==============================================
     void compileObstacles()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[0]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(15), B(15 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(15), B(19 + numBytes));
         cHex += section;
     }
+    //==============================================BUILDIT==============================================
     void compileBuildit()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[1]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(14), B(14 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(14), B(18 + numBytes));
         cHex += section;
     }
+    //==============================================FORCE==============================================
     void compileForce()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[2]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(12), B(12 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(12), B(16 + numBytes));
         cHex += section;
     }
+    //==============================================BLOWUP==============================================
     void compileBlowup()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[3]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(10), B(10 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(10), B(14 + numBytes));
         cHex += section;
     }
+    //==============================================PICKUPS==============================================
     void compilePickups()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[4]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string pickupSection = gm.fhex.Substring(afterHead-B(15),B(15+numBytes));
-        cHex += pickupSection;
+        uint unknownNum = gm.FSliceInt32(afterHead + B(4));
+        uint numObjs = gm.FSliceInt32(afterHead + B(8));
+        if (!ss.changedGizmoSections[4])
+        {
+            string pickupSection = gm.fhex.Substring(afterHead - B(15), B(19 + numBytes));
+            cHex += pickupSection;
+        }
+        else
+        {
+            int readLocation=afterHead+B(4);
+            int addAmt = 0;
+            if (unknownNum == 7) { addAmt = B(20); }
+            else if (unknownNum == 4) { addAmt = B(12); }
+            readLocation += addAmt;
+            string pickupSection = gm.fhex.Substring(afterHead-B(15),B(19)+addAmt);
+
+            GizmoPickup[] _p = new GizmoPickup[ss.gizParents.GetChild(4).childCount];
+            for (int j=0; j<_p.Length; j++) { _p[j] = ss.gizParents.GetChild(4).GetChild(j).GetComponent<GizmoPickup>(); }
+            foreach (GizmoPickup p in _p)
+            {
+                string nameHex = TypeConverter.StringToHex(p.pickupName,8);
+                string posHex = TypeConverter.Float32ToHex(p.transform.position.x);
+                posHex += TypeConverter.Float32ToHex(p.transform.position.y) + TypeConverter.Float32ToHex(p.transform.position.z);
+                string typeHex = TypeConverter.StringToHex(p.pickupType, 1);
+                string spawnHex = TypeConverter.Int8ToHex(p.spawnType)+" ";
+                string groupHex = TypeConverter.Int8ToHex(p.spawnGroup)+" ";
+                pickupSection += nameHex + posHex + typeHex +spawnHex+groupHex;
+            }
+            uint _nbytes = (uint)((pickupSection.Length / 3) -19);
+            uint _nobjs = (uint)_p.Length;
+            pickupSection = TypeConverter.SetStringSlice(pickupSection, TypeConverter.Int32ToHex(_nbytes), B(15), B(4));
+            pickupSection = TypeConverter.SetStringSlice(pickupSection, TypeConverter.Int32ToHex(_nobjs), B(23), B(4));
+            cHex += pickupSection;
+        }
     }
+    //==============================================LEVER==============================================
     void compileLever()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[5]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(9), B(9 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(9), B(13 + numBytes));
         cHex += section;
     }
+    //==============================================SPINNER==============================================
     void compileSpinner()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[6]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(11), B(11 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(11), B(15 + numBytes));
         cHex += section;
     }
+    //==============================================MINICUT==============================================
     void compileMinicut()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[7]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(11), B(11 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(11), B(15 + numBytes));
         cHex += section;
     }
+    //==============================================TUBE==============================================
     void compileTube()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[8]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(8), B(8 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(8), B(12 + numBytes));
         cHex += section;
     }
+    //==============================================ZIPUP==============================================
     void compileZipup()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[9]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(9), B(9 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(9), B(13 + numBytes));
         cHex += section;
     }
+    //==============================================TURRET==============================================
     void compileTurret()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[10]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(13), B(13 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(13), B(17 + numBytes));
         cHex += section;
     }
+    //==============================================BOMBGENERATOR==============================================
     void compileBombGenerator()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[11]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(18), B(18 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(17), B(21 + numBytes));
         cHex += section;
     }
+    //==============================================PANEL==============================================
     void compilePanel()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[12]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(9), B(9 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(9), B(13 + numBytes));
         cHex += section;
     }
+    //==============================================HATMACHINE==============================================
     void compileHatMachine()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[13]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(14), B(14 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(14), B(18 + numBytes));
         cHex += section;
     }
+    //==============================================PUSHBLOCKS==============================================
     void compilePushBlocks()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[14]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(14), B(14 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(14), B(18 + numBytes));
         cHex += section;
     }
+    //==============================================TORPMACHINE==============================================
     void compileTorpMachine()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[15]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(16), B(16 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(16), B(20 + numBytes));
         cHex += section;
     }
+    //==============================================SHADOWEDITOR==============================================
     void compileShadowEditor()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[16]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(16), B(16 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(16), B(20 + numBytes));
         cHex += section;
     }
+    //==============================================GRAPPLE==============================================
     void compileGrapple()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[17]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(11), B(11 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(11), B(15 + numBytes));
         cHex += section;
     }
+    //==============================================PLUG==============================================
     void compilePlug()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[18]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(8), B(8 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(8), B(12 + numBytes));
         cHex += section;
     }
+    //==============================================TECHNO==============================================
     void compileTechno()
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[19]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(10), B(10 + numBytes));
+        string section = gm.fhex.Substring(afterHead - B(10), B(14 + numBytes));
         cHex += section;
     }
 }

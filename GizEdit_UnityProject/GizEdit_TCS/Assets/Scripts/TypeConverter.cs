@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using TMPro;
+using UnityEditor.PackageManager;
+using System.Web;
 
 public class TypeConverter : MonoBehaviour
 {
@@ -177,7 +179,7 @@ public class TypeConverter : MonoBehaviour
         uint _v2 = _n - _v1;
         string _h1 = Int8ToHex(_v1);
         string _h2 = Int8ToHex(_v2/256);
-        return (_h2+" " + _h1 + " ");
+        return (_h1+" " + _h2 + " ");
     }
 
     static public uint HexToInt32(string _h)
@@ -206,7 +208,7 @@ public class TypeConverter : MonoBehaviour
         uint v2 = _n - v1;
         string h1 = Int16ToHex(v1);
         string h2 = Int16ToHex(v2/65536);
-        return (h2 + h1);
+        return (h1+h2);
     }
 
     static public float HexToFloat32(string _h, bool round = false)
@@ -229,7 +231,7 @@ public class TypeConverter : MonoBehaviour
         var i = BitConverter.ToInt32(bytes, 0);
         string _h = i.ToString("X8");
         string h1=_h[..2], h2=_h.Substring(2,2),h3=_h.Substring(4,2),h4=_h.Substring(6,2);
-        return (h1 + " " + h2 + " " + h3 + " " + h4 + " ");
+        return (h4 + " " + h3 + " " + h2 + " " + h1 + " ");
     }
 
     static public string HexToString(string _h)
@@ -247,14 +249,19 @@ public class TypeConverter : MonoBehaviour
         return ret;
     }
 
-    static public string StringToHex(string _h)
+    static public string StringToHex(string _h,int _length=0)
     {
+        int _l = _length - _h.Length;
         string ret = "";
         for(int j=0; j<_h.Length; j++)
         {
             char strChar = _h[j];
             uint _c = strChar;
             ret += Int8ToHex(_c) + " ";
+        }
+        for (int j = 0; j < _l; j++)
+        {
+            ret += "00 ";
         }
         return ret;
     }
@@ -266,6 +273,15 @@ public class TypeConverter : MonoBehaviour
     static public uint FloatToInt8Angle(float angle)
     {
         return (uint)(angle * 256 / 360);
+    }
+    static public string SetStringSlice(string ogStr, string newStr, int start, int length)
+    {
+        string ret=ogStr[..start];
+        for(int l=0; l<length; l++)
+        {
+            ret += newStr[l];
+        }
+        return ret+ogStr[(start + length)..];
     }
 
     static public void Prop_SetLabel(GameObject _prop, string _txt)
@@ -296,5 +312,22 @@ public class TypeConverter : MonoBehaviour
         _p.GetChild(1).gameObject.GetComponent<TMP_InputField>().text = _vec.x.ToString();
         _p.GetChild(2).gameObject.GetComponent<TMP_InputField>().text = _vec.y.ToString();
         _p.GetChild(3).gameObject.GetComponent<TMP_InputField>().text = _vec.z.ToString();
+    }
+    static public string Prop_GetInputField(GameObject _prop)
+    {
+        return _prop.transform.GetChild(1).gameObject.GetComponent<TMP_InputField>().text;
+    }
+    static public int Prop_GetDropdown(GameObject _prop)
+    {
+        return _prop.transform.GetChild(1).gameObject.GetComponent<TMP_Dropdown>().value;
+    }
+    static public Vector3 Prop_GetVec3(GameObject _prop)
+    {
+        Transform _p = _prop.transform;
+        Vector3 ret = new();
+        ret.x = float.Parse(_p.GetChild(1).gameObject.GetComponent<TMP_InputField>().text);
+        ret.y = float.Parse(_p.GetChild(2).gameObject.GetComponent<TMP_InputField>().text);
+        ret.z = float.Parse(_p.GetChild(3).gameObject.GetComponent<TMP_InputField>().text);
+        return ret;
     }
 }

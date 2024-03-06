@@ -15,6 +15,7 @@ TagManager:
   - BoolProp
   - UnknownProp
   - ChildProp
+  - spacingProp
   layers:
   - Default
   - TransparentFX
