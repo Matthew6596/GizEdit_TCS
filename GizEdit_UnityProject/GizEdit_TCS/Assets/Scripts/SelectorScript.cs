@@ -131,11 +131,13 @@ public class SelectorScript : MonoBehaviour
         GameObject _g = new();
         switch (gizT)
         {
-            case (0): break;
+            //case (0): break;
             case (2): _g.AddComponent<GizForce>(); break;
             case (4): _g.AddComponent<GizmoPickup>(); break;
+            default: Destroy(_g); break;
         }
-        StartCoroutine(delaySelectGiz(_g));
+        if(_g!=null)
+            StartCoroutine(delaySelectGiz(_g));
     }
     public void DeleteGizmo()
     {
@@ -239,6 +241,14 @@ public class SelectorScript : MonoBehaviour
     {
         loadingStuff.GetComponent<TMP_Text>().text = txt;
     }
+    public void AddChildToSelected()
+    {
+        
+    }
+    public void RemoveChildFromSelected()
+    {
+
+    }
     public void SetPropertiesMenu()
     {
         StartCoroutine(setPropsMenu());
@@ -247,6 +257,7 @@ public class SelectorScript : MonoBehaviour
     {
         int giztype = -1;
         if (SelectedGizmo.GetComponent<GizmoPickup>() != null) giztype = 4;
+        else if (SelectedGizmo.GetComponent<GizForce>() != null) giztype = 2;
         changedGizmoSections[giztype]= true;
         for (int i = propsSection.childCount - 1; i >= 0; i--) Destroy(propsSection.GetChild(i).gameObject); //clear properties
         switch (giztype)
@@ -259,8 +270,46 @@ public class SelectorScript : MonoBehaviour
                 break;
             case (2): //force
                 GizForce _force = SelectedGizmo.GetComponent<GizForce>();
+                //Get and read property fields
+                //GameObject force_refName = propsSection.GetChild(1).gameObject;
+                GameObject force_pos = propsSection.GetChild(2).gameObject;
+                GameObject force_resetTime = propsSection.GetChild(3).gameObject;
+                GameObject force_shakeTime = propsSection.GetChild(4).gameObject;
+                GameObject force_range = propsSection.GetChild(5).gameObject;
+                GameObject force_darkSide = propsSection.GetChild(6).gameObject;
+                GameObject force_unknown1 = propsSection.GetChild(7).gameObject;
+                GameObject force_unknown2  = propsSection.GetChild(8).gameObject;
+                GameObject force_forceSpd = propsSection.GetChild(9).gameObject;
+                GameObject force_resetSpd  = propsSection.GetChild(10).gameObject;
+                GameObject force_unknown3 = propsSection.GetChild(11).gameObject;
+                GameObject force_effectScale  = propsSection.GetChild(12).gameObject;
+                GameObject force_unknown4  = propsSection.GetChild(13).gameObject;
+                GameObject force_minStud  = propsSection.GetChild(14).gameObject;
+                GameObject force_maxStud = propsSection.GetChild(15).gameObject;
+                GameObject force_unknown5  = propsSection.GetChild(16).gameObject;
+                GameObject force_studSpawn = propsSection.GetChild(17).gameObject;
+                GameObject force_studSpd = propsSection.GetChild(18).gameObject;
+                //Set force data
+                _force.transform.position = TypeConverter.Prop_GetVec3(force_pos);
+                _force.resetTime = float.Parse(TypeConverter.Prop_GetInputField(force_resetTime));
+                _force.shakeTime = float.Parse(TypeConverter.Prop_GetInputField(force_shakeTime));
+                _force.range = float.Parse(TypeConverter.Prop_GetInputField(force_range));
+                _force.SetDarkSide(TypeConverter.Prop_GetToggle(force_darkSide));
+                _force.unknown1 = TypeConverter.Prop_GetInputField(force_unknown1);
+                _force.unknown2 = TypeConverter.Prop_GetInputField(force_unknown2);
+                _force.forceSpeed = float.Parse(TypeConverter.Prop_GetInputField(force_forceSpd));
+                _force.resetSpeed = float.Parse(TypeConverter.Prop_GetInputField(force_resetSpd));
+                _force.unknown3 = TypeConverter.Prop_GetInputField(force_unknown3);
+                _force.effectScale = float.Parse(TypeConverter.Prop_GetInputField(force_effectScale));
+                _force.unknown4 = TypeConverter.Prop_GetInputField(force_unknown4);
+                _force.minStudValue = (uint)int.Parse(TypeConverter.Prop_GetInputField(force_minStud));
+                _force.minStudValue = (uint)int.Parse(TypeConverter.Prop_GetInputField(force_maxStud));
+                _force.unknown5 = TypeConverter.Prop_GetInputField(force_unknown5);
+                _force.studSpawnPosition = TypeConverter.Prop_GetVec3(force_studSpawn);
+                _force.studSpeed = float.Parse(TypeConverter.Prop_GetInputField(force_studSpd));
+
                 break;
-            case (3): //blowup
+            case (3): //blowups
 
                 break;
             case (4): //pick up
@@ -330,6 +379,11 @@ public class SelectorScript : MonoBehaviour
     void ssp(int _q){SetSelectedProperties();}
     void ssp(string _q){SetSelectedProperties();}
     void ssp(bool _q){SetSelectedProperties();}
+    void AddEventListenerButton(Button _g,string _t)
+    {
+        if (_t == "AddBtn") _g.onClick.AddListener(AddChildToSelected);
+        else if (_t == "RemoveBtn") _g.onClick.AddListener(RemoveChildFromSelected);
+    }
 
     //PRIVATE METHODS
     float getCombinedMouseDelta()
@@ -387,7 +441,14 @@ public class SelectorScript : MonoBehaviour
     {
         return Instantiate(getPropPrefab(tagname),propsSection);
     }
-
+    void AddChildInputListeners(GameObject _prop)
+    {
+        AddDropdownListener(TypeConverter.Child_GetSelectDrop(_prop));
+        AddEventListenerButton(TypeConverter.Child_GetBtns(_prop).GetChild(0).GetComponent<Button>(), "AddBtn");
+        AddEventListenerButton(TypeConverter.Child_GetBtns(_prop).GetChild(1).GetComponent<Button>(), "RemoveBtn");
+        List<GameObject> _childProps = TypeConverter.Child_GetProperties(_prop);
+        AddInputListeners(_childProps.ToArray());
+    }
     void AddInputListener(GameObject _prop)
     {
         string _t = _prop.tag;
@@ -399,7 +460,7 @@ public class SelectorScript : MonoBehaviour
             case ("BoolProp"): AddToggleListener(_prop); break;
             case ("DropProp"): AddDropdownListener(_prop); break;
             case ("Vec3Prop"): AddVector3Listener(_prop); break;
-            case ("ChildProp"): break;
+            case ("ChildProp"): AddChildInputListeners(_prop); break;
             case ("UnknownProp"): AddInputFieldListener(_prop); break;
             case ("spacingProp"): break;
         }
@@ -445,93 +506,162 @@ public class SelectorScript : MonoBehaviour
     {
         int giztype = -1;
         if (SelectedGizmo.GetComponent<GizmoPickup>() != null) giztype = 4;
+        else if (SelectedGizmo.GetComponent<GizForce>() != null) giztype = 2;
         for (int i = propsSection.childCount - 1; i >= 0; i--) Destroy(propsSection.GetChild(i).gameObject); //clear properties
-        InstantiateProp("spacingProp");
-        switch (giztype)
+        if (giztype == -1) { ClosePopup(propsPanel); }
+        else
         {
-            case (0): //Obstacles
+            InstantiateProp("spacingProp");
+            switch (giztype)
+            {
+                case (0): //Obstacles
 
-                break;
-            case (1): //build it
+                    break;
+                case (1): //build it
 
-                break;
-            case (2): //force
-                GizForce _force = SelectedGizmo.GetComponent<GizForce>();
-                break;
-            case (3): //blowup
+                    break;
+                case (2): //force
+                          //Create property fields
+                          //GameObject force_sfxs = InstantiateProp("")
+                    GameObject force_refName = InstantiateProp("StringProp");
+                    GameObject force_position = InstantiateProp("Vec3Prop");
+                    GameObject force_resetTime = InstantiateProp("FloatProp");
+                    GameObject force_shakeTime = InstantiateProp("FloatProp");
+                    GameObject force_range = InstantiateProp("FloatProp");
+                    GameObject force_darkSide = InstantiateProp("BoolProp");
+                    //GameObject force_endState = InstantiateProp("DropProp");
+                    GameObject force_unknown1 = InstantiateProp("UnknownProp");
+                    //GameObject force_toggleForce
+                    GameObject force_unknown2 = InstantiateProp("UnknownProp");
+                    //GameObject force_children = InstantiateProp("ChildProp");
+                    GameObject force_forceSpd = InstantiateProp("FloatProp");
+                    GameObject force_resetSpd = InstantiateProp("FloatProp");
+                    GameObject force_unknown3 = InstantiateProp("UnknownProp");
+                    GameObject force_effectScale = InstantiateProp("FloatProp");
+                    GameObject force_unknown4 = InstantiateProp("UnknownProp");
+                    GameObject force_minStud = InstantiateProp("IntProp");
+                    GameObject force_maxStud = InstantiateProp("IntProp");
+                    GameObject force_unknown5 = InstantiateProp("UnknownProp");
+                    //GameObject force_unknown6 = InstantiateProp("UnknownProp");
+                    GameObject force_studSpawn = InstantiateProp("Vec3Prop");
+                    GameObject force_studSpd = InstantiateProp("FloatProp");
+                    yield return null;
+                    TypeConverter.Prop_SetLabel(force_refName, "Gizmo Name");
+                    TypeConverter.Prop_SetLabel(force_position, "Position");
+                    TypeConverter.Prop_SetLabel(force_resetTime, "Reset Time");
+                    TypeConverter.Prop_SetLabel(force_shakeTime, "Shake Time");
+                    TypeConverter.Prop_SetLabel(force_range, "Range");
+                    TypeConverter.Prop_SetLabel(force_darkSide, "Dark Side");
+                    TypeConverter.Prop_SetLabel(force_forceSpd, "Force Speed");
+                    TypeConverter.Prop_SetLabel(force_resetSpd, "Reset Speed");
+                    TypeConverter.Prop_SetLabel(force_effectScale, "Effect Size");
+                    TypeConverter.Prop_SetLabel(force_minStud, "Min Stud Value");
+                    TypeConverter.Prop_SetLabel(force_maxStud, "Max Stud Value");
+                    TypeConverter.Prop_SetLabel(force_studSpawn, "Stud Spawn");
+                    TypeConverter.Prop_SetLabel(force_studSpd, "Stud Speed");
 
-                break;
-            case (4): //pick up
-                //Create property fields
-                GameObject pickup_name = InstantiateProp("StringProp");
-                GameObject pickup_position = InstantiateProp("Vec3Prop");
-                GameObject pickup_type = InstantiateProp("DropProp");
-                GameObject pickup_spawntype = InstantiateProp("DropProp");
-                GameObject pickup_unknown1 = InstantiateProp("IntProp");
-                yield return null;
-                TypeConverter.Prop_SetLabel(pickup_name, "Gizmo Name");
-                TypeConverter.Prop_SetLabel(pickup_position, "Position");
-                TypeConverter.Prop_SetLabel(pickup_type, "Pickup Type");
-                TypeConverter.Prop_SetLabel(pickup_spawntype, "Spawn Type");
-                TypeConverter.Prop_SetLabel(pickup_unknown1, "Spawn Group");
+                    //Set properties data
+                    GizForce _force = SelectedGizmo.GetComponent<GizForce>();
 
-                //Set properties data
-                GizmoPickup _pickup = SelectedGizmo.GetComponent<GizmoPickup>();
+                    TypeConverter.Prop_SetInputField(force_refName, _force.referenceName);
+                    TypeConverter.Prop_SetVec3(force_position, _force.transform.position);
+                    TypeConverter.Prop_SetInputField(force_resetTime, _force.resetTime);
+                    TypeConverter.Prop_SetInputField(force_shakeTime, _force.shakeTime);
+                    TypeConverter.Prop_SetInputField(force_range, _force.range);
+                    TypeConverter.Prop_SetToggle(force_darkSide, _force.darkSide);
+                    TypeConverter.Prop_SetInputField(force_unknown1, _force.unknown1);
+                    TypeConverter.Prop_SetInputField(force_unknown2, _force.unknown2);
+                    TypeConverter.Prop_SetInputField(force_forceSpd, _force.forceSpeed);
+                    TypeConverter.Prop_SetInputField(force_resetSpd, _force.resetSpeed);
+                    TypeConverter.Prop_SetInputField(force_unknown3, _force.unknown3);
+                    TypeConverter.Prop_SetInputField(force_effectScale, _force.effectScale);
+                    TypeConverter.Prop_SetInputField(force_unknown4, _force.unknown4);
+                    TypeConverter.Prop_SetInputField(force_minStud, _force.minStudValue);
+                    TypeConverter.Prop_SetInputField(force_maxStud, _force.maxStudValue);
+                    TypeConverter.Prop_SetInputField(force_unknown5, _force.unknown5);
+                    TypeConverter.Prop_SetVec3(force_studSpawn, _force.studSpawnPosition);
+                    TypeConverter.Prop_SetInputField(force_studSpd, _force.studSpeed);
 
-                TypeConverter.Prop_SetInputField(pickup_name, _pickup.pickupName);
-                TypeConverter.Prop_SetVec3(pickup_position, _pickup.transform.position);
-                TypeConverter.Prop_SetDropdown(pickup_type, GizmoPickup.pickupTypeNames, GizmoPickup.pickupTypes.IndexOf(_pickup.pickupType));
-                TypeConverter.Prop_SetDropdown(pickup_spawntype, GizmoPickup.spawnTypeNames, _pickup.SpawnType);
-                TypeConverter.Prop_SetInputField(pickup_unknown1, _pickup.spawnGroup);
+                    GameObject[] _forceProps = { force_refName, force_position, force_resetTime, force_shakeTime,
+                force_range, force_darkSide, force_forceSpd, force_resetSpd, force_effectScale,
+                force_minStud, force_maxStud, force_studSpawn, force_studSpd };
+                    AddInputListeners(_forceProps);
+                    break;
+                case (3): //blowup
 
-                GameObject[] _pickupProps = { pickup_name, pickup_position, pickup_type, pickup_spawntype, pickup_unknown1 };
-                AddInputListeners(_pickupProps);
-                break;
-            case (5): //lever
+                    break;
+                case (4): //pick up
+                          //Create property fields
+                    GameObject pickup_name = InstantiateProp("StringProp");
+                    GameObject pickup_position = InstantiateProp("Vec3Prop");
+                    GameObject pickup_type = InstantiateProp("DropProp");
+                    GameObject pickup_spawntype = InstantiateProp("DropProp");
+                    GameObject pickup_unknown1 = InstantiateProp("IntProp");
+                    yield return null;
+                    TypeConverter.Prop_SetLabel(pickup_name, "Gizmo Name");
+                    TypeConverter.Prop_SetLabel(pickup_position, "Position");
+                    TypeConverter.Prop_SetLabel(pickup_type, "Pickup Type");
+                    TypeConverter.Prop_SetLabel(pickup_spawntype, "Spawn Type");
+                    TypeConverter.Prop_SetLabel(pickup_unknown1, "Spawn Group");
 
-                break;
-            case (6): //spinner
+                    //Set properties data
+                    GizmoPickup _pickup = SelectedGizmo.GetComponent<GizmoPickup>();
 
-                break;
-            case (7): //minicut
+                    TypeConverter.Prop_SetInputField(pickup_name, _pickup.pickupName);
+                    TypeConverter.Prop_SetVec3(pickup_position, _pickup.transform.position);
+                    TypeConverter.Prop_SetDropdown(pickup_type, GizmoPickup.pickupTypeNames, GizmoPickup.pickupTypes.IndexOf(_pickup.pickupType));
+                    TypeConverter.Prop_SetDropdown(pickup_spawntype, GizmoPickup.spawnTypeNames, _pickup.SpawnType);
+                    TypeConverter.Prop_SetInputField(pickup_unknown1, _pickup.spawnGroup);
 
-                break;
-            case (8): //tube
+                    GameObject[] _pickupProps = { pickup_name, pickup_position, pickup_type, pickup_spawntype, pickup_unknown1 };
+                    AddInputListeners(_pickupProps);
+                    break;
+                case (5): //lever
 
-                break;
-            case (9): //zipup
+                    break;
+                case (6): //spinner
 
-                break;
-            case (10): //turret
+                    break;
+                case (7): //minicut
 
-                break;
-            case (11): //bomb generator
+                    break;
+                case (8): //tube
 
-                break;
-            case (12): //panel
+                    break;
+                case (9): //zipup
 
-                break;
-            case (13): //hat machine
+                    break;
+                case (10): //turret
 
-                break;
-            case (14): //push blocks
+                    break;
+                case (11): //bomb generator
 
-                break;
-            case (15): //torp machine
+                    break;
+                case (12): //panel
 
-                break;
-            case (16): //shadow editor
+                    break;
+                case (13): //hat machine
 
-                break;
-            case (17): //grapple
+                    break;
+                case (14): //push blocks
 
-                break;
-            case (18): //plug
+                    break;
+                case (15): //torp machine
 
-                break;
-            case (19): //techno
+                    break;
+                case (16): //shadow editor
 
-                break;
+                    break;
+                case (17): //grapple
+
+                    break;
+                case (18): //plug
+
+                    break;
+                case (19): //techno
+
+                    break;
+            }
         }
     }
 }

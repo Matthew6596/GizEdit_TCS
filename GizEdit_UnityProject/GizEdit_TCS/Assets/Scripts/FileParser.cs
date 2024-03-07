@@ -50,7 +50,7 @@ public class FileParser : MonoBehaviour
     {
         //readObstacles();
         //Read build its
-        //readForces();
+        readForces();
         //Read blowups
         readPickups();
         //Read lever
@@ -229,8 +229,10 @@ public class FileParser : MonoBehaviour
             readLocation += B(40);
             _g.darkSide = gm.fhex[readLocation]=='1';
             _g.endState = uint.Parse(gm.fhex[readLocation + 1].ToString());
-            //Unknown 4 bytes
-            //Unknown 3 bytes
+            _g.unknown1 = gm.fhex.Substring(readLocation + B(1), B(3));
+            //toggle force
+            _g.unknown2 = gm.fhex.Substring(readLocation + B(5), B(3));
+
             readLocation += B(8);
 
             //Child data
@@ -258,8 +260,10 @@ public class FileParser : MonoBehaviour
             //Parse closer data
             _g.forceSpeed = gm.FSliceFloat32(readLocation);
             _g.resetSpeed = gm.FSliceFloat32(readLocation+B(4));
+            _g.unknown3 = gm.fhex.Substring(readLocation + B(8), B(4));
             readLocation += B(12); //Unknown 4 bytes
             _g.effectScale = gm.FSliceFloat32(readLocation);
+            _g.unknown4 = gm.fhex.Substring(readLocation + B(4), B(4));
             readLocation += B(8); //Unknown 4 bytes
 
             uint unknownStringLength = gm.FSliceInt8(readLocation);
@@ -268,6 +272,7 @@ public class FileParser : MonoBehaviour
 
             _g.minStudValue = gm.FSliceInt16(readLocation);
             _g.maxStudValue = gm.FSliceInt16(readLocation+B(2));
+            _g.unknown5 = gm.fhex.Substring(readLocation + B(4), B(2));
             readLocation += B(6); //Unknown 2 bytes
             _g.studSpawnPosition = new Vector3(gm.FSliceFloat32(readLocation),gm.FSliceFloat32(readLocation+B(4)),gm.FSliceFloat32(readLocation+B(8)));
             _g.studSpeed = gm.FSliceFloat32(readLocation+B(12));
@@ -441,8 +446,16 @@ public class FileParser : MonoBehaviour
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[2]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(12), B(16 + numBytes));
-        cHex += section;
+        if (!ss.changedGizmoSections[2])
+        {
+            string section = gm.fhex.Substring(afterHead - B(12), B(16 + numBytes));
+            cHex += section;
+        }
+        else
+        {
+
+        }
+        
     }
     //==============================================BLOWUP==============================================
     void compileBlowup()

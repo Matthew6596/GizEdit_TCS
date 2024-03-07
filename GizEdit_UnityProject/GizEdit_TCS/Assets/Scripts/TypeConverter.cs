@@ -5,6 +5,7 @@ using System;
 using TMPro;
 using UnityEditor.PackageManager;
 using System.Web;
+using UnityEngine.UI;
 
 public class TypeConverter : MonoBehaviour
 {
@@ -313,6 +314,10 @@ public class TypeConverter : MonoBehaviour
         _p.GetChild(2).gameObject.GetComponent<TMP_InputField>().text = _vec.y.ToString();
         _p.GetChild(3).gameObject.GetComponent<TMP_InputField>().text = _vec.z.ToString();
     }
+    static public void Prop_SetToggle(GameObject _prop, bool _bool)
+    {
+        _prop.transform.GetChild(1).gameObject.GetComponent<Toggle>().isOn = _bool;
+    }
     static public string Prop_GetInputField(GameObject _prop)
     {
         return _prop.transform.GetChild(1).gameObject.GetComponent<TMP_InputField>().text;
@@ -329,5 +334,41 @@ public class TypeConverter : MonoBehaviour
         ret.y = float.Parse(_p.GetChild(2).gameObject.GetComponent<TMP_InputField>().text);
         ret.z = float.Parse(_p.GetChild(3).gameObject.GetComponent<TMP_InputField>().text);
         return ret;
+    }
+    static public bool Prop_GetToggle(GameObject _prop)
+    {
+        return _prop.transform.GetChild(1).gameObject.GetComponent<Toggle>().isOn;
+    }
+
+    static public Transform Child_GetParent(GameObject _prop)
+    {
+        return (_prop.transform.GetChild(0).GetChild(0).GetChild(0));
+    }
+    static public GameObject Child_GetSelectDrop(GameObject _prop)
+    {
+        return Child_GetParent(_prop).GetChild(1).GetChild(1).gameObject;
+    }
+    static public Transform Child_GetBtns(GameObject _prop)
+    {
+        return Child_GetParent(_prop).GetChild(2);
+    }
+    static public int Child_GetSelected(GameObject _prop)
+    {
+        return Child_GetSelectDrop(_prop).GetComponent<TMP_Dropdown>().value;
+    }
+    static public GameObject Child_GetPropParent(GameObject _prop,int _index)
+    {
+        return Child_GetParent(_prop).GetChild(_index + 3).gameObject;
+    }
+    static public List<GameObject> Child_GetProperties(GameObject _prop)
+    {
+        List<GameObject> _ps = new();
+        Transform _c = Child_GetParent(_prop);
+        int cnt = _c.childCount;
+        for(int _j = 3; _j<cnt; _j++)
+        {
+            _ps.Add(_c.GetChild(_j).gameObject);
+        }
+        return _ps;
     }
 }

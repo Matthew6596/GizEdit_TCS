@@ -16673,6 +16673,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1708767187}
+  - component: {fileID: 1708767188}
   m_Layer: 0
   m_Name: forces
   m_TagString: Untagged
@@ -16695,6 +16696,49 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1596191334}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &1708767188
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1708767186}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 0
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: cfa2e31a6e627fd4d8ba56c42cb17824, type: 2}
+  - {fileID: 2100000, guid: c0a8bfcef08bfc0439cbab54eb8bcad3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1708889642
 GameObject:
   m_ObjectHideFlags: 0
@@ -19827,7 +19871,7 @@ MonoBehaviour:
   m_Content: {fileID: 1445974400}
   m_Horizontal: 0
   m_Vertical: 1
-  m_MovementType: 1
+  m_MovementType: 0
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
@@ -21851,7 +21895,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5432881863833743919, guid: 4a2c779f65b037441afb18ebb4883ac2, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5432881863833743919, guid: 4a2c779f65b037441afb18ebb4883ac2, type: 3}
       propertyPath: m_AnchorMin.x
@@ -21859,7 +21903,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5432881863833743919, guid: 4a2c779f65b037441afb18ebb4883ac2, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5432881863833743919, guid: 4a2c779f65b037441afb18ebb4883ac2, type: 3}
       propertyPath: m_SizeDelta.x
@@ -21899,7 +21943,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5432881863833743919, guid: 4a2c779f65b037441afb18ebb4883ac2, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 50
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5432881863833743919, guid: 4a2c779f65b037441afb18ebb4883ac2, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -22057,6 +22101,22 @@ PrefabInstance:
     - target: {fileID: 5518699547867138396, guid: 95c0031c44b14d8488b29750ded86815, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6102435411511359785, guid: 95c0031c44b14d8488b29750ded86815, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6102435411511359785, guid: 95c0031c44b14d8488b29750ded86815, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6102435411511359785, guid: 95c0031c44b14d8488b29750ded86815, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 6102435411511359785, guid: 95c0031c44b14d8488b29750ded86815, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -65
       objectReference: {fileID: 0}
     - target: {fileID: 7039236175315960380, guid: 95c0031c44b14d8488b29750ded86815, type: 3}
       propertyPath: m_Name
