@@ -1,3 +1,4 @@
+using Microsoft.Unity.VisualStudio.Editor;
 using Ookii.Dialogs;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,15 +8,18 @@ public class GizmoMeshes : MonoBehaviour
 {
     static public Mesh CubeMesh(Vector3 scale)
     {
+        float scx = scale.x / 2;
+        float scy = scale.y / 2;
+        float scz = scale.z / 2;
         Vector3[] vertices = {
-            new Vector3 (0, 0, 0),
-            new Vector3 (scale.x, 0, 0),
-            new Vector3 (scale.x, scale.y, 0),
-            new Vector3 (0, scale.y, 0),
-            new Vector3 (0, scale.y, scale.z),
-            new Vector3 (scale.x, scale.y, scale.z),
-            new Vector3 (scale.x, 0, scale.z),
-            new Vector3 (0, 0, scale.z),
+            new Vector3 (-scx, -scy, -scz),
+            new Vector3 (scx, -scy, -scz),
+            new Vector3 (scx, scy, -scz),
+            new Vector3 (-scx, scy, -scz),
+            new Vector3 (-scx, scy, scz),
+            new Vector3 (scx, scy, scz),
+            new Vector3 (scx, -scy, scz),
+            new Vector3 (-scx, -scy, scz),
         };
 
         int[] triangles = {

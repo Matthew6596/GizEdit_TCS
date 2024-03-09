@@ -39,6 +39,8 @@ public class GizForce : MonoBehaviour
     MeshFilter mfilter;
     MeshCollider mcollider;
 
+    public int selectedChild = 0;
+
     public static string[] endStateNames = { };
 
 

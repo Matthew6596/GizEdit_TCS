@@ -79,8 +79,14 @@ public class GizmoPickup : MonoBehaviour
 
     Mesh setMesh()
     {
-        return GizmoMeshes.CubeMesh(Vector3.one*0.1f); //temp
         int m = pickupTypes.IndexOf(pickupType);
+        if (m < 4) return GizmoMeshes.CubeMesh(Vector3.one * 0.1f); //studs
+        else if (m < 6) return GizmoMeshes.CubeMesh(new Vector3(1.15f, 1.85f, 1.15f) * 0.2f); //kits
+        else if (m == 6) return GizmoMeshes.CubeMesh(Vector3.one * 0.25f); //powerup
+        else if (m == 7) return GizmoMeshes.CubeMesh(Vector3.one * 0.1f); //heart
+        else if (m == 8) return GizmoMeshes.CubeMesh(new Vector3(1,.75f,1) * 0.25f); //redbrick
+        else if (m == 9) return GizmoMeshes.CubeMesh(Vector3.one * 0.15f); //torpedo
+        else return GizmoMeshes.CubeMesh(Vector3.one * 0.1f); //
     }
     Material setMaterial()
     {

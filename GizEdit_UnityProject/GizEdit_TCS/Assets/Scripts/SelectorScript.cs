@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using SFB;
 using System;
+using Unity.VisualScripting;
 
 public class SelectorScript : MonoBehaviour
 {
@@ -40,8 +41,8 @@ public class SelectorScript : MonoBehaviour
         }
         set
         {
-            //if(selectedGizmo)
-            selectedGizmo = value;
+            if(value!=null)
+                selectedGizmo = value;
         }
     }
     GameObject prevSelectedGizmo;
@@ -101,12 +102,12 @@ public class SelectorScript : MonoBehaviour
         OpenPopup(propsPanel);
     }
     public void DeselectGizmo()
-    {
+    {/*
         prevSelectedGizmo = SelectedGizmo;
         SelectedGizmo = null;
         selectedEditorGiz = "";
         edit_MoveGiz.transform.parent = null;
-        edit_MoveGiz.SetActive(false);
+        edit_MoveGiz.SetActive(false);*/
     }
     public void EditGiz(string editName)
     {
@@ -241,23 +242,13 @@ public class SelectorScript : MonoBehaviour
     {
         loadingStuff.GetComponent<TMP_Text>().text = txt;
     }
-    public void AddChildToSelected()
-    {
-        
-    }
-    public void RemoveChildFromSelected()
-    {
-
-    }
     public void SetPropertiesMenu()
     {
         StartCoroutine(setPropsMenu());
     }
     public void SetSelectedProperties()
     {
-        int giztype = -1;
-        if (SelectedGizmo.GetComponent<GizmoPickup>() != null) giztype = 4;
-        else if (SelectedGizmo.GetComponent<GizForce>() != null) giztype = 2;
+        int giztype = getGizType();
         changedGizmoSections[giztype]= true;
         for (int i = propsSection.childCount - 1; i >= 0; i--) Destroy(propsSection.GetChild(i).gameObject); //clear properties
         switch (giztype)
@@ -279,16 +270,17 @@ public class SelectorScript : MonoBehaviour
                 GameObject force_darkSide = propsSection.GetChild(6).gameObject;
                 GameObject force_unknown1 = propsSection.GetChild(7).gameObject;
                 GameObject force_unknown2  = propsSection.GetChild(8).gameObject;
-                GameObject force_forceSpd = propsSection.GetChild(9).gameObject;
-                GameObject force_resetSpd  = propsSection.GetChild(10).gameObject;
-                GameObject force_unknown3 = propsSection.GetChild(11).gameObject;
-                GameObject force_effectScale  = propsSection.GetChild(12).gameObject;
-                GameObject force_unknown4  = propsSection.GetChild(13).gameObject;
-                GameObject force_minStud  = propsSection.GetChild(14).gameObject;
-                GameObject force_maxStud = propsSection.GetChild(15).gameObject;
-                GameObject force_unknown5  = propsSection.GetChild(16).gameObject;
-                GameObject force_studSpawn = propsSection.GetChild(17).gameObject;
-                GameObject force_studSpd = propsSection.GetChild(18).gameObject;
+                GameObject force_children  = propsSection.GetChild(9).gameObject;
+                GameObject force_forceSpd = propsSection.GetChild(10).gameObject;
+                GameObject force_resetSpd  = propsSection.GetChild(11).gameObject;
+                GameObject force_unknown3 = propsSection.GetChild(12).gameObject;
+                GameObject force_effectScale  = propsSection.GetChild(13).gameObject;
+                GameObject force_unknown4  = propsSection.GetChild(14).gameObject;
+                GameObject force_minStud  = propsSection.GetChild(15).gameObject;
+                GameObject force_maxStud = propsSection.GetChild(16).gameObject;
+                GameObject force_unknown5  = propsSection.GetChild(17).gameObject;
+                GameObject force_studSpawn = propsSection.GetChild(18).gameObject;
+                GameObject force_studSpd = propsSection.GetChild(19).gameObject;
                 //Set force data
                 _force.transform.position = TypeConverter.Prop_GetVec3(force_pos);
                 _force.resetTime = float.Parse(TypeConverter.Prop_GetInputField(force_resetTime));
@@ -297,6 +289,11 @@ public class SelectorScript : MonoBehaviour
                 _force.SetDarkSide(TypeConverter.Prop_GetToggle(force_darkSide));
                 _force.unknown1 = TypeConverter.Prop_GetInputField(force_unknown1);
                 _force.unknown2 = TypeConverter.Prop_GetInputField(force_unknown2);
+                int _forcechild_prevSelect = _force.selectedChild;
+                _force.selectedChild = TypeConverter.Child_GetSelected(force_children);
+                GizForceChild _forceC = _force.childrenList[_force.selectedChild].GetComponent<GizForceChild>();
+                if(_forcechild_prevSelect==_force.selectedChild)
+                    _forceC.gizName = TypeConverter.Prop_GetInputField(TypeConverter.Child_GetPropParent(force_children,0));
                 _force.forceSpeed = float.Parse(TypeConverter.Prop_GetInputField(force_forceSpd));
                 _force.resetSpeed = float.Parse(TypeConverter.Prop_GetInputField(force_resetSpd));
                 _force.unknown3 = TypeConverter.Prop_GetInputField(force_unknown3);
@@ -375,14 +372,43 @@ public class SelectorScript : MonoBehaviour
                 break;
         }
     }
+    int getGizType()
+    {
+        if (SelectedGizmo.GetComponent<GizForce>() != null) return 2;
+        if (SelectedGizmo.GetComponent<GizmoPickup>() != null) return 4;
+        return -1;
+    }
+    void removeDropOption(GameObject _prop, int _index)
+    {
+        TMP_Dropdown _d = _prop.transform.GetChild(1).gameObject.GetComponent<TMP_Dropdown>();
+        _d.options.RemoveAt(_index);
+        switch (getGizType())
+        {
+            case (2):
+                SelectedGizmo.GetComponent<GizForce>().childrenList.RemoveAt(_index); break;
+            case (4): break;
+        }
+    }
+    void addDropOption(GameObject _prop, string _option)
+    {
+        TMP_Dropdown _d = _prop.transform.GetChild(1).gameObject.GetComponent<TMP_Dropdown>();
+        _d.options.Add(new(_option));
+        switch (getGizType())
+        {
+            case (2):GameObject _c = new(); GizForceChild _g = _c.AddComponent<GizForceChild>(); _g.gizName = _option;
+                SelectedGizmo.GetComponent<GizForce>().childrenList.Add(_c); break;
+            case (4): break;
+        }
+    }
 
     void ssp(int _q){SetSelectedProperties();}
     void ssp(string _q){SetSelectedProperties();}
     void ssp(bool _q){SetSelectedProperties();}
-    void AddEventListenerButton(Button _g,string _t)
+    void AddEventListenerButton(GameObject _g)
     {
-        if (_t == "AddBtn") _g.onClick.AddListener(AddChildToSelected);
-        else if (_t == "RemoveBtn") _g.onClick.AddListener(RemoveChildFromSelected);
+        propBtn _p = _g.GetComponent<propBtn>();
+        _p.btnSelf = _p.GetComponent<Button>();
+        _p.GetComponent<propBtn>().AddListener();
     }
 
     //PRIVATE METHODS
@@ -437,15 +463,16 @@ public class SelectorScript : MonoBehaviour
             default: Debug.Log("Error: Invalid prefab type"); return null;
         }
     }
-    GameObject InstantiateProp(string tagname)
+    GameObject InstantiateProp(string tagname,Transform _parent=null)
     {
-        return Instantiate(getPropPrefab(tagname),propsSection);
+        if (_parent == null) _parent = propsSection;
+        return Instantiate(getPropPrefab(tagname),_parent);
     }
     void AddChildInputListeners(GameObject _prop)
     {
-        AddDropdownListener(TypeConverter.Child_GetSelectDrop(_prop));
-        AddEventListenerButton(TypeConverter.Child_GetBtns(_prop).GetChild(0).GetComponent<Button>(), "AddBtn");
-        AddEventListenerButton(TypeConverter.Child_GetBtns(_prop).GetChild(1).GetComponent<Button>(), "RemoveBtn");
+        AddDropdownListener(TypeConverter.Child_GetPropParent(_prop,-2));
+        AddEventListenerButton(TypeConverter.Child_GetBtns(_prop).GetChild(0).gameObject);
+        AddEventListenerButton(TypeConverter.Child_GetBtns(_prop).GetChild(1).gameObject);
         List<GameObject> _childProps = TypeConverter.Child_GetProperties(_prop);
         AddInputListeners(_childProps.ToArray());
     }
@@ -493,6 +520,7 @@ public class SelectorScript : MonoBehaviour
     }
     void AddDropdownListener(GameObject _prop)
     {
+        Debug.Log(_prop.name);
         TMP_Dropdown tmp = _prop.transform.GetChild(1).GetComponent<TMP_Dropdown>();
         tmp.onValueChanged.AddListener(ssp);
     }
@@ -504,9 +532,7 @@ public class SelectorScript : MonoBehaviour
 
     IEnumerator setPropsMenu()
     {
-        int giztype = -1;
-        if (SelectedGizmo.GetComponent<GizmoPickup>() != null) giztype = 4;
-        else if (SelectedGizmo.GetComponent<GizForce>() != null) giztype = 2;
+        int giztype = getGizType();
         for (int i = propsSection.childCount - 1; i >= 0; i--) Destroy(propsSection.GetChild(i).gameObject); //clear properties
         if (giztype == -1) { ClosePopup(propsPanel); }
         else
@@ -522,7 +548,6 @@ public class SelectorScript : MonoBehaviour
                     break;
                 case (2): //force
                           //Create property fields
-                          //GameObject force_sfxs = InstantiateProp("")
                     GameObject force_refName = InstantiateProp("StringProp");
                     GameObject force_position = InstantiateProp("Vec3Prop");
                     GameObject force_resetTime = InstantiateProp("FloatProp");
@@ -533,7 +558,8 @@ public class SelectorScript : MonoBehaviour
                     GameObject force_unknown1 = InstantiateProp("UnknownProp");
                     //GameObject force_toggleForce
                     GameObject force_unknown2 = InstantiateProp("UnknownProp");
-                    //GameObject force_children = InstantiateProp("ChildProp");
+                    GameObject force_children = InstantiateProp("ChildProp");
+                        GameObject forceChild_gizName = InstantiateProp("StringProp",TypeConverter.Child_GetParent(force_children));
                     GameObject force_forceSpd = InstantiateProp("FloatProp");
                     GameObject force_resetSpd = InstantiateProp("FloatProp");
                     GameObject force_unknown3 = InstantiateProp("UnknownProp");
@@ -545,6 +571,7 @@ public class SelectorScript : MonoBehaviour
                     //GameObject force_unknown6 = InstantiateProp("UnknownProp");
                     GameObject force_studSpawn = InstantiateProp("Vec3Prop");
                     GameObject force_studSpd = InstantiateProp("FloatProp");
+                    //GameObject force_sfxs = InstantiateProp("")
                     yield return null;
                     TypeConverter.Prop_SetLabel(force_refName, "Gizmo Name");
                     TypeConverter.Prop_SetLabel(force_position, "Position");
@@ -552,6 +579,8 @@ public class SelectorScript : MonoBehaviour
                     TypeConverter.Prop_SetLabel(force_shakeTime, "Shake Time");
                     TypeConverter.Prop_SetLabel(force_range, "Range");
                     TypeConverter.Prop_SetLabel(force_darkSide, "Dark Side");
+                    TypeConverter.Prop_SetLabel(TypeConverter.Child_GetPropParent(force_children,-2), "Children");
+                        TypeConverter.Prop_SetLabel(forceChild_gizName, "Child Name");
                     TypeConverter.Prop_SetLabel(force_forceSpd, "Force Speed");
                     TypeConverter.Prop_SetLabel(force_resetSpd, "Reset Speed");
                     TypeConverter.Prop_SetLabel(force_effectScale, "Effect Size");
@@ -559,6 +588,9 @@ public class SelectorScript : MonoBehaviour
                     TypeConverter.Prop_SetLabel(force_maxStud, "Max Stud Value");
                     TypeConverter.Prop_SetLabel(force_studSpawn, "Stud Spawn");
                     TypeConverter.Prop_SetLabel(force_studSpd, "Stud Speed");
+
+                    TypeConverter.Child_GetBtns(force_children).GetChild(0).GetComponent<propBtn>().function = () => { addDropOption(TypeConverter.Child_GetPropParent(force_children,-2), "newForceChild"); };
+                    TypeConverter.Child_GetBtns(force_children).GetChild(1).GetComponent<propBtn>().function = () => { removeDropOption(TypeConverter.Child_GetPropParent(force_children,-2), TypeConverter.Child_GetSelected(force_children)); };
 
                     //Set properties data
                     GizForce _force = SelectedGizmo.GetComponent<GizForce>();
@@ -571,6 +603,8 @@ public class SelectorScript : MonoBehaviour
                     TypeConverter.Prop_SetToggle(force_darkSide, _force.darkSide);
                     TypeConverter.Prop_SetInputField(force_unknown1, _force.unknown1);
                     TypeConverter.Prop_SetInputField(force_unknown2, _force.unknown2);
+                    TypeConverter.Prop_SetChildren(force_children, _force.childrenList,_force.selectedChild);
+                        TypeConverter.Prop_SetInputField(forceChild_gizName, _force.childrenList[TypeConverter.Child_GetSelected(force_children)].GetComponent<GizForceChild>().gizName);
                     TypeConverter.Prop_SetInputField(force_forceSpd, _force.forceSpeed);
                     TypeConverter.Prop_SetInputField(force_resetSpd, _force.resetSpeed);
                     TypeConverter.Prop_SetInputField(force_unknown3, _force.unknown3);
@@ -584,7 +618,7 @@ public class SelectorScript : MonoBehaviour
 
                     GameObject[] _forceProps = { force_refName, force_position, force_resetTime, force_shakeTime,
                 force_range, force_darkSide, force_forceSpd, force_resetSpd, force_effectScale,
-                force_minStud, force_maxStud, force_studSpawn, force_studSpd };
+                force_minStud, force_maxStud, force_studSpawn, force_studSpd , force_children, forceChild_gizName};
                     AddInputListeners(_forceProps);
                     break;
                 case (3): //blowup
