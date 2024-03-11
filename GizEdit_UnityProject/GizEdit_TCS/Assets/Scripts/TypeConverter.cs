@@ -267,13 +267,13 @@ public class TypeConverter : MonoBehaviour
         return ret;
     }
 
-    static public float Int8AngleToFloat(uint angle)
+    static public float Int16AngleToFloat(uint angle)
     {
-        return ((float)angle * 360f) / 256f;
+        return ((float)angle * 360f) / 65536f;
     }
-    static public uint FloatToInt8Angle(float angle)
+    static public uint FloatToInt16Angle(float angle)
     {
-        return (uint)(angle * 256 / 360);
+        return (uint)(angle * 65536 / 360);
     }
     static public string SetStringSlice(string ogStr, string newStr, int start, int length)
     {

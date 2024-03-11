@@ -72,6 +72,7 @@ public class SelectorScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (player == null) player = GameObject.Find("Player");
         if (selectedEditorGiz.Contains("move") && SelectedGizmo!=null && mouseHeld)
         {
             gizEditing = true;
@@ -137,8 +138,11 @@ public class SelectorScript : MonoBehaviour
             case (4): _g.AddComponent<GizmoPickup>(); break;
             default: Destroy(_g); break;
         }
-        if(_g!=null)
+        if (_g != null)
+        {
+            _g.transform.position = player.transform.position+((player.transform.GetChild(0).forward));
             StartCoroutine(delaySelectGiz(_g));
+        }
     }
     public void DeleteGizmo()
     {
@@ -175,7 +179,6 @@ public class SelectorScript : MonoBehaviour
         if (path.Length != 0)
         {
             gizPath = path[..(path.LastIndexOf(@"\")+1)];
-            Debug.Log("Yuh: " + gizPath);
             byte[] fbytes = System.IO.File.ReadAllBytes(path);
             Debug.Log("File Selected: "+path);
             loadingStuff.SetActive(true);
@@ -250,7 +253,6 @@ public class SelectorScript : MonoBehaviour
     {
         int giztype = getGizType();
         changedGizmoSections[giztype]= true;
-        for (int i = propsSection.childCount - 1; i >= 0; i--) Destroy(propsSection.GetChild(i).gameObject); //clear properties
         switch (giztype)
         {
             case (0): //Obstacles
@@ -291,19 +293,26 @@ public class SelectorScript : MonoBehaviour
                 _force.unknown2 = TypeConverter.Prop_GetInputField(force_unknown2);
                 int _forcechild_prevSelect = _force.selectedChild;
                 _force.selectedChild = TypeConverter.Child_GetSelected(force_children);
-                GizForceChild _forceC = _force.childrenList[_force.selectedChild].GetComponent<GizForceChild>();
-                if(_forcechild_prevSelect==_force.selectedChild)
-                    _forceC.gizName = TypeConverter.Prop_GetInputField(TypeConverter.Child_GetPropParent(force_children,0));
+                if (_force.childrenList.Count > 0)
+                {
+                    GizForceChild _forceC = _force.childrenList[_force.selectedChild].GetComponent<GizForceChild>();
+                    if (_forcechild_prevSelect == _force.selectedChild) //Child properties go within this if statement
+                    {
+                        _forceC.gizName = TypeConverter.Prop_GetInputField(TypeConverter.Child_GetPropParent(force_children, 0));
+                    }
+                }
                 _force.forceSpeed = float.Parse(TypeConverter.Prop_GetInputField(force_forceSpd));
                 _force.resetSpeed = float.Parse(TypeConverter.Prop_GetInputField(force_resetSpd));
                 _force.unknown3 = TypeConverter.Prop_GetInputField(force_unknown3);
                 _force.effectScale = float.Parse(TypeConverter.Prop_GetInputField(force_effectScale));
                 _force.unknown4 = TypeConverter.Prop_GetInputField(force_unknown4);
                 _force.minStudValue = (uint)int.Parse(TypeConverter.Prop_GetInputField(force_minStud));
-                _force.minStudValue = (uint)int.Parse(TypeConverter.Prop_GetInputField(force_maxStud));
+                _force.maxStudValue = (uint)int.Parse(TypeConverter.Prop_GetInputField(force_maxStud));
                 _force.unknown5 = TypeConverter.Prop_GetInputField(force_unknown5);
                 _force.studSpawnPosition = TypeConverter.Prop_GetVec3(force_studSpawn);
                 _force.studSpeed = float.Parse(TypeConverter.Prop_GetInputField(force_studSpd));
+
+                if (_force.childrenList.Count>1&&_forcechild_prevSelect != _force.selectedChild) SetPropertiesMenu();
 
                 break;
             case (3): //blowups
@@ -520,7 +529,6 @@ public class SelectorScript : MonoBehaviour
     }
     void AddDropdownListener(GameObject _prop)
     {
-        Debug.Log(_prop.name);
         TMP_Dropdown tmp = _prop.transform.GetChild(1).GetComponent<TMP_Dropdown>();
         tmp.onValueChanged.AddListener(ssp);
     }
@@ -604,7 +612,10 @@ public class SelectorScript : MonoBehaviour
                     TypeConverter.Prop_SetInputField(force_unknown1, _force.unknown1);
                     TypeConverter.Prop_SetInputField(force_unknown2, _force.unknown2);
                     TypeConverter.Prop_SetChildren(force_children, _force.childrenList,_force.selectedChild);
+                    if (_force.childrenList.Count > 0)//Child properties
+                    {
                         TypeConverter.Prop_SetInputField(forceChild_gizName, _force.childrenList[TypeConverter.Child_GetSelected(force_children)].GetComponent<GizForceChild>().gizName);
+                    }
                     TypeConverter.Prop_SetInputField(force_forceSpd, _force.forceSpeed);
                     TypeConverter.Prop_SetInputField(force_resetSpd, _force.resetSpeed);
                     TypeConverter.Prop_SetInputField(force_unknown3, _force.unknown3);

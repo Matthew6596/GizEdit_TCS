@@ -7,9 +7,9 @@ public class GizForceChild : MonoBehaviour
     public Transform gizParent;
     [Header("Force Child Properties")]
     public string gizName = "";
-    //unknown1
+    public string unknown1= "00 00 80 3F 00 00 20 41 ";
     public bool isSelected = false;
-    //unknown2
+    public string unknown2 = "00 00 00 00 00 ";
 
     void Start()
     {

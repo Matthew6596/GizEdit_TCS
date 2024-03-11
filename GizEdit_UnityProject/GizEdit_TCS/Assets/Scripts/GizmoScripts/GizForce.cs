@@ -8,7 +8,6 @@ public class GizForce : MonoBehaviour
 {
     //PICKUP PROPERTIES
     [Header("Force Properties")]
-    public string[] sfxs;
     public string referenceName="force0";
     public float resetTime = 0f;
     public float shakeTime = 0f;
@@ -16,7 +15,7 @@ public class GizForce : MonoBehaviour
     public bool darkSide = false;
     public uint endState = 0;
     public string unknown1 = "00 00 00 ";
-    public string toggleForceUnknown = "";
+    public string toggleForceUnknown = "FF ";
     public string unknown2 = "00 00 03 ";
     public List<GameObject> childrenList = new();
     public float forceSpeed = 1f;
@@ -26,11 +25,13 @@ public class GizForce : MonoBehaviour
     public string unknown4 = "00 00 00 00 ";
     public uint minStudValue = 0;
     public uint maxStudValue = 0;
-    public string unknown5 = "00 00 ";
-    public uint unknown5length = 0;
-    public string unknown6 = "";
+    public string unknown5 = "";
+    public float studAngle = 0;
     public Vector3 studSpawnPosition = Vector3.zero;
     public float studSpeed = 1.75f;
+    public string duringSfx = "";
+    public string endSfx = "";
+    public string unknown6 = "";
     
     [Header("Other")]
     public Mesh[] typeMeshes;
