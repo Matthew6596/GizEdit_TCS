@@ -266,6 +266,30 @@ public class TypeConverter : MonoBehaviour
         }
         return ret;
     }
+    static public string StringToHex(string _h, bool endSpacing, out int _length)
+    {
+        string ret = "";
+        for (int j = 0; j < _h.Length; j++)
+        {
+            char strChar = _h[j];
+            uint _c = strChar;
+            ret += Int8ToHex(_c) + " ";
+        }
+        if (ret.Length > 0)
+            if (ret[^3..] != "00 " && endSpacing) { ret += "00 "; _length = _h.Length + 1; }
+            else
+            {
+                _length = _h.Length;
+            }
+        else _length = 0;
+        return ret;
+    }
+
+    static public string VarStringToHex(string _h)
+    {
+        string _r = StringToHex(_h, true, out int _l);
+        return Int8ToHex((uint)_l) + " " + _r;
+    }
 
     static public float Int16AngleToFloat(uint angle)
     {

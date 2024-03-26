@@ -49,7 +49,7 @@ public class FileParser : MonoBehaviour
     public void startLoadGizmos()
     {
         //readObstacles();
-        //Read build its
+        readBuildits();
         readForces();
         //Read blowups
         readPickups();
@@ -196,6 +196,79 @@ public class FileParser : MonoBehaviour
         }
 
     }
+    //==============================================BUILDITS==============================================
+    public void readBuildits()
+    {
+        int afterHead = getPosAfter(TypeConverter.getHeader("GizBuildit"));
+        uint numBytes = gm.FSliceInt32(afterHead);
+        uint unknown1 = gm.FSliceInt8(afterHead + B(4));
+        uint numObjs = gm.FSliceInt16(afterHead + B(5));
+        //Header extra
+        //int numObjs = 0;
+        //
+        int startData = afterHead + B(7);
+        int endLocation = B(numBytes) + afterHead;
+        //
+
+        int readLocation = startData;
+        int rc = 0;
+        while (readLocation < endLocation)
+        { //numBytes driven loop
+
+            //Create forceObj
+            GameObject _f = new();
+            GizBuildit _g = _f.AddComponent<GizBuildit>();
+            _f.name = "buildit_" + rc;
+
+            //Parse data
+            _g.referenceName = gm.FSliceString(readLocation, 16);
+            _f.transform.position = new Vector3(gm.FSliceFloat32(readLocation + B(16)), gm.FSliceFloat32(readLocation + B(20)), gm.FSliceFloat32(readLocation + B(24)));
+
+            readLocation += B(29); //prev 28 bytes + 03 byte
+
+            //Child data
+            uint numBuildChildren = gm.FSliceInt8(readLocation);
+            readLocation += B(1);
+            for (int rc2 = 0; rc2 < numBuildChildren; rc2++)
+            {
+                //Create child
+                GameObject _child = new();
+                GizForceChild _gfc = _child.AddComponent<GizForceChild>();
+                _child.name = "builditchild_" + rc2;
+
+                //Parse child info
+                uint childNameLength = gm.FSliceInt8(readLocation);
+                _gfc.gizName = gm.FSliceString(readLocation + B(1), childNameLength);
+                readLocation += B(childNameLength + 1);
+                _gfc.unknown1 = gm.fhex.Substring(readLocation, B(4));
+                _gfc.animateLength = gm.FSliceFloat32(readLocation + B(4));
+                readLocation += B(8); //Unknown 4 bytes
+                _gfc.isSelected = gm.FSliceInt8(readLocation) != 0;
+                _gfc.unknown2 = gm.fhex.Substring(readLocation + B(1), B(3));
+                readLocation += B(4); //Unknown 3 bytes
+
+                //Assign child
+                _gfc.gizParent = _g.transform;
+                _g.childrenList.Add(_child);
+            }
+
+            //Parse closer data
+            _g.jumpPow = gm.FSliceFloat32(readLocation);
+            _g.minStudValue = gm.FSliceInt16(readLocation+B(4));
+            _g.maxStudValue = gm.FSliceInt16(readLocation + B(6));
+            _g.unknown1 = gm.fhex.Substring(readLocation + B(8), B(2));
+            _g.unknown2 = gm.fhex.Substring(readLocation + B(10), B(5));
+            _g.studPitch = TypeConverter.Int16AngleToFloat(gm.FSliceInt16(readLocation+B(15)));
+            _g.studYaw = TypeConverter.Int16AngleToFloat(gm.FSliceInt16(readLocation+B(17)));
+            readLocation += B(19);
+            _g.studSpawnPosition = new Vector3(gm.FSliceFloat32(readLocation), gm.FSliceFloat32(readLocation + B(4)), gm.FSliceFloat32(readLocation + B(8)));
+            _g.studSpeed = gm.FSliceFloat32(readLocation + B(12));
+            _g.unknown3 = gm.fhex.Substring(readLocation + B(16), B(5));
+            readLocation += B(21);
+            rc++;
+        }
+
+    }
     //==============================================FORCES==============================================
     public void readForces()
     {
@@ -248,8 +321,9 @@ public class FileParser : MonoBehaviour
                 uint childNameLength = gm.FSliceInt8(readLocation);
                 _gfc.gizName = gm.FSliceString(readLocation + B(1), childNameLength);
                 readLocation += B(childNameLength + 1);
-                _gfc.unknown1 = gm.fhex.Substring(readLocation, B(8));
-                readLocation += B(8); //Unknown 8 bytes
+                _gfc.unknown1 = gm.fhex.Substring(readLocation, B(4));
+                _gfc.animateLength = gm.FSliceFloat32(readLocation + B(4));
+                readLocation += B(8); //Unknown 4 bytes
                 _gfc.isSelected = gm.FSliceInt8(readLocation) != 0;
                 _gfc.unknown2 = gm.fhex.Substring(readLocation+B(1), B(5));
                 readLocation += B(6); //Unknown 5 bytes
@@ -398,7 +472,7 @@ public class FileParser : MonoBehaviour
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     string cHex = "";
-    public string CompileGizmos() //MISSING 87 BYTES OF DATA
+    public string CompileGizmos()
     {
         cHex = "01 00 00 00 ";
         if (gm.fhex != "") //TEMPORARY, NEED TO BE ABLE TO MAKE BLANK .GIZ BEFORE REMOVE
@@ -442,8 +516,53 @@ public class FileParser : MonoBehaviour
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[1]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        string section = gm.fhex.Substring(afterHead - B(14), B(18 + numBytes));
-        cHex += section;
+        if (!ss.changedGizmoSections[2])
+        {
+            string section = gm.fhex.Substring(afterHead - B(14), B(18 + numBytes));
+            cHex += section;
+        }
+        else
+        {
+            int readLocation = afterHead + B(7);
+            string section = gm.fhex.Substring(afterHead - B(14), B(21));
+
+            //Get all buildits
+            GizBuildit[] _f = new GizBuildit[ss.gizParents.GetChild(2).childCount];
+            for (int j = 0; j < _f.Length; j++) { _f[j] = ss.gizParents.GetChild(1).GetChild(j).GetComponent<GizBuildit>(); }
+            //Read all buildits data
+            foreach (GizBuildit f in _f)
+            {
+                section += TypeConverter.StringToHex(f.referenceName, 16);
+                section+= TypeConverter.Float32ToHex(f.transform.position.x) + TypeConverter.Float32ToHex(f.transform.position.y) + TypeConverter.Float32ToHex(f.transform.position.z);
+                //Children
+                string childrenHex = TypeConverter.Int8ToHex((uint)f.childrenList.Count) + " ";
+                foreach (GameObject _c in f.childrenList)
+                {
+                    GizForceChild fc = _c.GetComponent<GizForceChild>();
+                    childrenHex += TypeConverter.VarStringToHex(fc.gizName);
+                    childrenHex += fc.unknown1;
+                    childrenHex += TypeConverter.Float32ToHex(fc.animateLength);
+                    childrenHex += (fc.isSelected) ? "01 " : "00 ";
+                    childrenHex += fc.unknown2;
+                }
+                //
+                section += TypeConverter.Float32ToHex(f.jumpPow);
+                section += TypeConverter.Int16ToHex(f.minStudValue);
+                section += TypeConverter.Int16ToHex(f.maxStudValue);
+                section += f.unknown1 + f.unknown2;
+                section += TypeConverter.Int16ToHex(TypeConverter.FloatToInt16Angle(f.studPitch));
+                section += TypeConverter.Int16ToHex(TypeConverter.FloatToInt16Angle(f.studYaw));
+                section += TypeConverter.Float32ToHex(f.studSpawnPosition.x) + TypeConverter.Float32ToHex(f.studSpawnPosition.y) + TypeConverter.Float32ToHex(f.studSpawnPosition.z);
+                section += TypeConverter.Float32ToHex(f.studSpeed);
+                section += f.unknown3;
+
+            }
+            uint _nbytes = (uint)((section.Length / 3) - 16);
+            uint _nobjs = (uint)_f.Length;
+            section = TypeConverter.SetStringSlice(section, TypeConverter.Int32ToHex(_nbytes), B(14), B(4));
+            section = TypeConverter.SetStringSlice(section, TypeConverter.Int16ToHex(_nobjs), B(19), B(2));
+            cHex += section;
+        }
     }
     //==============================================FORCE==============================================
     void compileForce()
@@ -478,9 +597,9 @@ public class FileParser : MonoBehaviour
                 foreach (GameObject _c in f.childrenList)
                 {
                     GizForceChild fc = _c.GetComponent<GizForceChild>();
-                    childrenHex += TypeConverter.Int8ToHex((uint)fc.gizName.Length) + " ";
-                    childrenHex += TypeConverter.StringToHex(fc.gizName);
+                    childrenHex += TypeConverter.VarStringToHex(fc.gizName);
                     childrenHex += fc.unknown1;
+                    childrenHex += TypeConverter.Float32ToHex(fc.animateLength);
                     childrenHex += (fc.isSelected)?"01 ":"00 ";
                     childrenHex += fc.unknown2;
                 }
@@ -490,14 +609,14 @@ public class FileParser : MonoBehaviour
                 string unknown3Hex = f.unknown3;
                 string forceScaleHex = TypeConverter.Float32ToHex(f.effectScale);
                 string unknown4Hex = f.unknown4;
-                string unknown5Hex = TypeConverter.Int8ToHex((uint)f.unknown5.Length) + " " + TypeConverter.StringToHex(f.unknown5);
+                string unknown5Hex = TypeConverter.VarStringToHex(f.unknown5);
                 string studValueRangeHex = TypeConverter.Int16ToHex(f.minStudValue)+TypeConverter.Int16ToHex(f.maxStudValue);
                 string studAngleHex = TypeConverter.Int16ToHex(TypeConverter.FloatToInt16Angle(f.studAngle));
                 string studPosHex = TypeConverter.Float32ToHex(f.studSpawnPosition.x) + TypeConverter.Float32ToHex(f.studSpawnPosition.y) + TypeConverter.Float32ToHex(f.studSpawnPosition.z);
                 string studSpdHex = TypeConverter.Float32ToHex(f.studSpeed);
-                string sfxDuringHex = TypeConverter.Int8ToHex((uint)f.duringSfx.Length)+" "+TypeConverter.StringToHex(f.duringSfx);
-                string sfxEndHex = TypeConverter.Int8ToHex((uint)f.endSfx.Length) + " " + TypeConverter.StringToHex(f.endSfx);
-                string unknown6Hex = TypeConverter.Int8ToHex((uint)f.unknown6.Length) + " " + TypeConverter.StringToHex(f.unknown6);
+                string sfxDuringHex = TypeConverter.VarStringToHex(f.duringSfx);
+                string sfxEndHex = TypeConverter.VarStringToHex(f.endSfx);
+                string unknown6Hex = TypeConverter.VarStringToHex(f.unknown6);
 
                 section += nameHex+posHex+resetTimeHex+shakeTimeHex+rangeHex+darkPlusEndStateHex+unknown1Hex+toggleForceHex+
                     unknown2Hex+childrenHex+forceSpdHex+resetSpdHex+unknown3Hex+forceScaleHex+unknown4Hex+unknown5Hex+studValueRangeHex+

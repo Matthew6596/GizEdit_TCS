@@ -1,38 +1,25 @@
-using Palmmedia.ReportGenerator.Core.Parser.Filtering;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
-public class GizForce : MonoBehaviour
+public class GizBuildit : MonoBehaviour
 {
     //PROPERTIES
     [Header("Force Properties")]
-    public string referenceName="force0";
-    public float resetTime = 0f;
-    public float shakeTime = 0f;
-    public float range = 0f;
-    public bool darkSide = false;
-    public uint endState = 0;
-    public string unknown1 = "00 00 00 ";
-    public string toggleForceUnknown = "FF ";
-    public string unknown2 = "00 00 03 ";
+    public string referenceName = "buildit0";
+    //pos
     public List<GameObject> childrenList = new();
-    public float forceSpeed = 1f;
-    public float resetSpeed = 1f;
-    public string unknown3 = "00 00 00 00 ";
-    public float effectScale = 1f;
-    public string unknown4 = "00 00 00 00 ";
-    public string unknown5 = "";
+    public float jumpPow = 1;
     public uint minStudValue = 0;
     public uint maxStudValue = 0;
-    public float studAngle = 0;
+    public string unknown1 = "01 64 ";
+    public string unknown2 = "00 00 00 00 00 ";
+    public float studPitch = 0;
+    public float studYaw = 0;
     public Vector3 studSpawnPosition = Vector3.zero;
     public float studSpeed = 1.75f;
-    public string duringSfx = "";
-    public string endSfx = "";
-    public string unknown6 = "";
-    
+    public string unknown3 = "00 00 00 00 00 ";
+
     [Header("Other")]
     public Mesh[] typeMeshes;
     public Material[] typeMaterials;
@@ -44,12 +31,6 @@ public class GizForce : MonoBehaviour
 
     public static string[] endStateNames = { };
 
-
-    public void SetDarkSide(bool _b)
-    {
-        darkSide = _b;
-        mrender.material = setMaterial();
-    }
 
     // Start is called before the first frame update
     void Start()
@@ -66,7 +47,7 @@ public class GizForce : MonoBehaviour
     IEnumerator FindParent()
     {
         yield return null;
-        Transform p = GameObject.Find("forces").transform;
+        Transform p = GameObject.Find("buildits").transform;
         transform.parent = p;
         mrender.material = setMaterial();
     }
@@ -78,8 +59,7 @@ public class GizForce : MonoBehaviour
     }
     Material setMaterial()
     {
-        int m = darkSide?1 : 0;
-        return transform.parent.GetComponent<MeshRenderer>().materials[m];
+        return transform.parent.GetComponent<MeshRenderer>().material;
         //int m = pickupTypes.IndexOf(pickupType);
         //return transform.parent.GetComponent<MeshRenderer>().materials[m];
     }
