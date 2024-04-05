@@ -418,6 +418,7 @@ public class TypeConverter : MonoBehaviour
     }
     static public int Child_GetType(GameObject _prop)
     {
+        if (_prop.GetComponent<GizBuilditChild>() != null) return 1;
         if (_prop.GetComponent<GizForceChild>() != null) return 2;
         return -1;
     }
@@ -425,6 +426,7 @@ public class TypeConverter : MonoBehaviour
     {
         switch (Child_GetType(_prop))
         {
+            case (1): return _prop.GetComponent<GizBuilditChild>().gizName;
             case (2): return _prop.GetComponent<GizForceChild>().gizName;
         }
         return "";

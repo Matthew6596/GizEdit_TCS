@@ -135,6 +135,7 @@ public class SelectorScript : MonoBehaviour
         switch (gizT)
         {
             //case (0): break;
+            case (1): _g.AddComponent<GizBuildit>(); break;
             case (2): _g.AddComponent<GizForce>(); break;
             case (4): _g.AddComponent<GizmoPickup>(); break;
             default: Destroy(_g); break;
@@ -313,7 +314,7 @@ public class SelectorScript : MonoBehaviour
                 _build.selectedChild = TypeConverter.Child_GetSelected(build_children);
                 if (_build.childrenList.Count > 0)
                 {
-                    GizForceChild _forceC = _build.childrenList[_build.selectedChild].GetComponent<GizForceChild>();
+                    GizBuilditChild _forceC = _build.childrenList[_build.selectedChild].GetComponent<GizBuilditChild>();
                     if (_buildchild_prevSelect == _build.selectedChild) //Child properties go within this if statement
                     {
                         _forceC.gizName = TypeConverter.Prop_GetInputField(TypeConverter.Child_GetPropParent(build_children, 0));
@@ -484,6 +485,8 @@ public class SelectorScript : MonoBehaviour
         _d.options.RemoveAt(_index);
         switch (getGizType())
         {
+            case (1):
+                SelectedGizmo.GetComponent<GizBuildit>().childrenList.RemoveAt(_index); break;
             case (2):
                 SelectedGizmo.GetComponent<GizForce>().childrenList.RemoveAt(_index); break;
             case (4): break;
@@ -495,8 +498,11 @@ public class SelectorScript : MonoBehaviour
         _d.options.Add(new(_option));
         switch (getGizType())
         {
-            case (2):GameObject _c = new(); GizForceChild _g = _c.AddComponent<GizForceChild>(); _g.gizName = _option;
-                SelectedGizmo.GetComponent<GizForce>().childrenList.Add(_c); break;
+            case (1):
+                GameObject _b = new(); GizBuilditChild _gb = _b.AddComponent<GizBuilditChild>(); _gb.gizName = _option;
+                SelectedGizmo.GetComponent<GizBuildit>().childrenList.Add(_b); break;
+            case (2):GameObject _f = new(); GizForceChild _gf = _f.AddComponent<GizForceChild>(); _gf.gizName = _option;
+                SelectedGizmo.GetComponent<GizForce>().childrenList.Add(_f); break;
             case (4): break;
         }
     }
@@ -688,7 +694,7 @@ public class SelectorScript : MonoBehaviour
                     TypeConverter.Prop_SetChildren(build_children, _build.childrenList, _build.selectedChild);
                     if (_build.childrenList.Count > 0)//Child properties
                     {
-                        GizForceChild _gfc = _build.childrenList[TypeConverter.Child_GetSelected(build_children)].GetComponent<GizForceChild>();
+                        GizBuilditChild _gfc = _build.childrenList[TypeConverter.Child_GetSelected(build_children)].GetComponent<GizBuilditChild>();
                         TypeConverter.Prop_SetInputField(buildChild_gizName, _gfc.gizName);
                         TypeConverter.Prop_SetInputField(buildChild_unknown1, _gfc.unknown1);
                         TypeConverter.Prop_SetInputField(buildChild_animLen, _gfc.animateLength);

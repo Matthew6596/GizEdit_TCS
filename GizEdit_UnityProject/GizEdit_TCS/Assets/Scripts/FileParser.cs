@@ -233,7 +233,7 @@ public class FileParser : MonoBehaviour
             {
                 //Create child
                 GameObject _child = new();
-                GizForceChild _gfc = _child.AddComponent<GizForceChild>();
+                GizBuilditChild _gfc = _child.AddComponent<GizBuilditChild>();
                 _child.name = "builditchild_" + rc2;
 
                 //Parse child info
@@ -516,7 +516,7 @@ public class FileParser : MonoBehaviour
     {
         int afterHead = getPosAfter(TypeConverter.headerHex[1]);
         uint numBytes = gm.FSliceInt32(afterHead);
-        if (!ss.changedGizmoSections[2])
+        if (!ss.changedGizmoSections[1])
         {
             string section = gm.fhex.Substring(afterHead - B(14), B(18 + numBytes));
             cHex += section;
@@ -527,24 +527,26 @@ public class FileParser : MonoBehaviour
             string section = gm.fhex.Substring(afterHead - B(14), B(21));
 
             //Get all buildits
-            GizBuildit[] _f = new GizBuildit[ss.gizParents.GetChild(2).childCount];
+            GizBuildit[] _f = new GizBuildit[ss.gizParents.GetChild(1).childCount];
             for (int j = 0; j < _f.Length; j++) { _f[j] = ss.gizParents.GetChild(1).GetChild(j).GetComponent<GizBuildit>(); }
             //Read all buildits data
             foreach (GizBuildit f in _f)
             {
                 section += TypeConverter.StringToHex(f.referenceName, 16);
                 section+= TypeConverter.Float32ToHex(f.transform.position.x) + TypeConverter.Float32ToHex(f.transform.position.y) + TypeConverter.Float32ToHex(f.transform.position.z);
+                section += "03 ";
                 //Children
                 string childrenHex = TypeConverter.Int8ToHex((uint)f.childrenList.Count) + " ";
                 foreach (GameObject _c in f.childrenList)
                 {
-                    GizForceChild fc = _c.GetComponent<GizForceChild>();
+                    GizBuilditChild fc = _c.GetComponent<GizBuilditChild>();
                     childrenHex += TypeConverter.VarStringToHex(fc.gizName);
                     childrenHex += fc.unknown1;
                     childrenHex += TypeConverter.Float32ToHex(fc.animateLength);
                     childrenHex += (fc.isSelected) ? "01 " : "00 ";
                     childrenHex += fc.unknown2;
                 }
+                section += childrenHex;
                 //
                 section += TypeConverter.Float32ToHex(f.jumpPow);
                 section += TypeConverter.Int16ToHex(f.minStudValue);
