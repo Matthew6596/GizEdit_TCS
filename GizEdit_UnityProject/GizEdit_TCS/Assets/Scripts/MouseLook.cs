@@ -18,14 +18,14 @@ public class MouseLook : MonoBehaviour
     float mouseX, mouseY, verticalRotation=0;
     bool rightClicking = false;
 
-    SelectorScript ss;
+    //SelectorScript ss;
 
     // Start is called before the first frame update
     void Start()
     {
         Rigidbody rb = GetComponent<Rigidbody>();
         if(rb!=null) rb.freezeRotation = true;
-        ss = GameObject.Find("EditorManager").GetComponent<SelectorScript>();
+        //ss = GameObject.Find("EditorManager").GetComponent<SelectorScript>();
     }
 
     // Update is called once per frame
@@ -76,7 +76,7 @@ public class MouseLook : MonoBehaviour
         //Debug.Log(ctx.ReadValue<Vector2>());
         mouseX = ctx.ReadValue<Vector2>().x;
         mouseY = ctx.ReadValue<Vector2>().y;
-        ss.mouseDelta.Set(mouseX,mouseY);
+        //ss.mouseDelta.Set(mouseX,mouseY);
     }
 
     public void LClick(InputAction.CallbackContext ctx)
@@ -84,23 +84,25 @@ public class MouseLook : MonoBehaviour
         //ss.mouseDelta = new Vector2(mouseX, mouseY);
         if (ctx.performed)
         {
-            ss.mouseHeld = true;
+            //ss.mouseHeld = true;
             RaycastHit hit;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray,out hit, 100f)){
+
                 if (hit.transform.CompareTag("objectGiz"))
-                    ss.SelectGizmo(hit.transform.gameObject);
-                else if (hit.transform.CompareTag("editorGiz"))
-                    ss.selectedEditorGiz = hit.transform.name;
+                    EditorManager.instance.SelectGizmo(hit.collider.gameObject);
+
+                //else if (hit.transform.CompareTag("editorGiz"))
+                    //ss.selectedEditorGiz = hit.transform.name;
             }
             else
             {
-                ss.DeselectGizmo();
+                //ss.DeselectGizmo();
             }
         }
         else
         {
-            ss.mouseHeld = false;
+            //ss.mouseHeld = false;
         }
     }
 }

@@ -431,4 +431,16 @@ public class TypeConverter : MonoBehaviour
         }
         return "";
     }
+
+    static public Vector3 ParseVec3(string vec3)
+    {
+        //separate string into floats
+        int loc1 = vec3.IndexOf(',');
+        int loc2 = vec3.LastIndexOf(',');
+        int loc3 = vec3.IndexOf(')');
+        float num1 = float.Parse(vec3[1..loc1]);
+        float num2 = float.Parse(vec3[(loc1+1)..loc2]);
+        float num3 = float.Parse(vec3[(loc2+1)..loc3]);
+        return new Vector3(num1, num2, num3);
+    }
 }

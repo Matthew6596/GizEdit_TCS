@@ -404,12 +404,12 @@ public class FileParser : MonoBehaviour
             //Creating Pickup Object
             GameObject _pickupObj = new();
             GizmoPickup _props = _pickupObj.AddComponent<GizmoPickup>();
-            _props.pickupType = ptype.ToString();
+            //_props.pickupType = ptype.ToString();
             _pickupObj.transform.position = new Vector3(pickupX, pickupY, pickupZ);
-            _props.pickupName = pickupName;
+            //_props.pickupName = pickupName;
             _pickupObj.name = "pickup_"+rp;
-            _props.spawnType = spawnType;
-            _props.spawnGroup = spawnGroup;
+            //_props.spawnType = spawnType;
+            //_props.spawnGroup = spawnGroup;
 
             readLocation += B(8 + 12 + 3);
         }
@@ -665,13 +665,13 @@ public class FileParser : MonoBehaviour
             for (int j=0; j<_p.Length; j++) { _p[j] = ss.gizParents.GetChild(4).GetChild(j).GetComponent<GizmoPickup>(); }
             foreach (GizmoPickup p in _p)
             {
-                string nameHex = TypeConverter.StringToHex(p.pickupName,8);
+                //string nameHex = TypeConverter.StringToHex(p.pickupName,8);
                 string posHex = TypeConverter.Float32ToHex(p.transform.position.x);
                 posHex += TypeConverter.Float32ToHex(p.transform.position.y) + TypeConverter.Float32ToHex(p.transform.position.z);
-                string typeHex = TypeConverter.StringToHex(p.pickupType, 1);
-                string spawnHex = TypeConverter.Int8ToHex(p.spawnType)+" ";
-                string groupHex = TypeConverter.Int8ToHex(p.spawnGroup)+" ";
-                pickupSection += nameHex + posHex + typeHex +spawnHex+groupHex;
+                //string typeHex = TypeConverter.StringToHex(p.pickupType, 1);
+                //string spawnHex = TypeConverter.Int8ToHex(p.spawnType)+" ";
+                //string groupHex = TypeConverter.Int8ToHex(p.spawnGroup)+" ";
+                //pickupSection += nameHex + posHex + typeHex +spawnHex+groupHex;
             }
             uint _nbytes = (uint)((pickupSection.Length / 3) -19);
             uint _nobjs = (uint)_p.Length;

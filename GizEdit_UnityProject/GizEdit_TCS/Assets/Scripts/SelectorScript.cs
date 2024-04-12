@@ -62,7 +62,7 @@ public class SelectorScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        gm = GameObject.Find("GameManager").GetComponent<GameManager>();
+        gm = GameManager.instance.GetComponent<GameManager>();
         fp = GameObject.Find("GizParser").GetComponent<FileParser>();
         player = gm.player;
         for (int i = 1; i < propsSection.childCount; i++) props.Add(propsSection.GetChild(i).gameObject);
@@ -175,8 +175,7 @@ public class SelectorScript : MonoBehaviour
         var extensions = new[] {
             new ExtensionFilter("Gizmo Files", "GIZ"),
         };
-        StandaloneFileBrowserWindows sfbw = new(); //YOOOOOOOOOOOOOO CHANGE FOR MAC / LINUX BUILDS
-        string[] paths = sfbw.OpenFilePanel("Gizmo File Search", "", extensions, false);
+        string[] paths = gm.FileBrowser.OpenFilePanel("Gizmo File Search", "", extensions, false);
         string path = (paths.Length>0)?paths[0]:"";
         if (path.Length != 0)
         {
@@ -208,8 +207,7 @@ public class SelectorScript : MonoBehaviour
         var extensions = new[] {
             new ExtensionFilter("Git Files", "GIT"),
         };
-        StandaloneFileBrowserWindows sfbw = new(); //YOOOOOOOOOOOOOO CHANGE FOR MAC / LINUX BUILDS
-        string[] paths = sfbw.OpenFilePanel("Git File Search", "", extensions, false);
+        string[] paths = gm.FileBrowser.OpenFilePanel("Git File Search", "", extensions, false);
         string path = (paths.Length > 0) ? paths[0] : "";
         if (path.Length != 0)
         {
@@ -223,9 +221,8 @@ public class SelectorScript : MonoBehaviour
     }
     public void ExportGit()
     {
-        StandaloneFileBrowserWindows sfbw = new(); //YOOOOOOOOOOOOOO CHANGE FOR MAC / LINUX BUILDS
         var extensions = new[] { new ExtensionFilter("Git Files", "GIT"), };
-        string path = sfbw.SaveFilePanel("Git File Export", "", "CustomGit.GIT", extensions);
+        string path = gm.FileBrowser.SaveFilePanel("Git File Export", "", "CustomGit.GIT", extensions);
         if (path.Length != 0)
         {
             System.IO.File.WriteAllText(path, GitStr);
@@ -244,9 +241,8 @@ public class SelectorScript : MonoBehaviour
     }
     void finishExport(byte[] compiledBytes)
     {
-        StandaloneFileBrowserWindows sfbw = new(); //YOOOOOOOOOOOOOO CHANGE FOR MAC / LINUX BUILDS
         var extensions = new[] {new ExtensionFilter("Gizmo Files", "GIZ"),};
-        string path = sfbw.SaveFilePanel("Gizmo File Export", "", "CustomGizmos.GIZ", extensions);
+        string path = gm.FileBrowser.SaveFilePanel("Gizmo File Export", "", "CustomGizmos.GIZ", extensions);
         if (path.Length != 0)
         {
             System.IO.File.WriteAllBytes(path, compiledBytes);
@@ -418,11 +414,11 @@ public class SelectorScript : MonoBehaviour
                 GameObject pickup_spawntype = propsSection.GetChild(4).gameObject;
                 GameObject pickup_unknown1 = propsSection.GetChild(5).gameObject;
                 //Set pickup data
-                _pickup.pickupName = TypeConverter.Prop_GetInputField(pickup_name);
+                //_pickup.pickupName = TypeConverter.Prop_GetInputField(pickup_name);
                 _pickup.transform.position = TypeConverter.Prop_GetVec3(pickup_position);
-                _pickup.SetType(TypeConverter.Prop_GetDropdown(pickup_type));
-                _pickup.SpawnType = TypeConverter.Prop_GetDropdown(pickup_spawntype);
-                _pickup.spawnGroup = (uint)int.Parse(TypeConverter.Prop_GetInputField(pickup_unknown1));
+                //_pickup.SetType(TypeConverter.Prop_GetDropdown(pickup_type));
+                //_pickup.SpawnType = TypeConverter.Prop_GetDropdown(pickup_spawntype);
+                //_pickup.spawnGroup = (uint)int.Parse(TypeConverter.Prop_GetInputField(pickup_unknown1));
 
                 break;
             case (5): //lever
@@ -839,11 +835,11 @@ public class SelectorScript : MonoBehaviour
                     //Set properties data
                     GizmoPickup _pickup = SelectedGizmo.GetComponent<GizmoPickup>();
 
-                    TypeConverter.Prop_SetInputField(pickup_name, _pickup.pickupName);
+                    //TypeConverter.Prop_SetInputField(pickup_name, _pickup.pickupName);
                     TypeConverter.Prop_SetVec3(pickup_position, _pickup.transform.position);
-                    TypeConverter.Prop_SetDropdown(pickup_type, GizmoPickup.pickupTypeNames, GizmoPickup.pickupTypes.IndexOf(_pickup.pickupType));
-                    TypeConverter.Prop_SetDropdown(pickup_spawntype, GizmoPickup.spawnTypeNames, _pickup.SpawnType);
-                    TypeConverter.Prop_SetInputField(pickup_unknown1, _pickup.spawnGroup);
+                    //TypeConverter.Prop_SetDropdown(pickup_type, GizmoPickup.pickupTypeNames, GizmoPickup.pickupTypes.IndexOf(_pickup.pickupType));
+                    //TypeConverter.Prop_SetDropdown(pickup_spawntype, GizmoPickup.spawnTypeNames, _pickup.SpawnType);
+                    //TypeConverter.Prop_SetInputField(pickup_unknown1, _pickup.spawnGroup);
 
                     GameObject[] _pickupProps = { pickup_name, pickup_position, pickup_type, pickup_spawntype, pickup_unknown1 };
                     AddInputListeners(_pickupProps);
