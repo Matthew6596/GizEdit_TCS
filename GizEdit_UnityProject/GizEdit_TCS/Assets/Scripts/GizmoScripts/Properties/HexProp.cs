@@ -42,25 +42,30 @@ public class HexProp : GizProperty
     }
     public GameObject EditorInstance { get; set; }
     public TMP_InputField Input { get; set; }
+    bool endEditValidate;
     public void UpdateValue()
     {
         Input.text = Input.text.ToUpper();
-        if (Input.text.Length == Length - 1 && Input.text[Length-1]!=' ')
+        if (endEditValidate)
         {
-            Input.text += " ";
+            if (Input.text.Length == Length - 1)
+            {
+                Input.text += " ";
+            }
+            if (Input.text.Length != Length)
+            {
+                EditorManager.ThrowError("ERROR: " + Name + " property must have exactly " + Length + " characters");
+            }
+            else if (stringNotHex(Input.text))
+            {
+                EditorManager.ThrowError("ERROR: " + Name + " property must be valid hexidecimal");
+            }
+            else
+            {
+                SetValue(Input.text);
+            }
         }
-        if (Input.text.Length!=Length)
-        {
-            EditorManager.ThrowError("ERROR: " + Name + " property must have exactly " + Length + " characters");
-        }
-        else if(stringNotHex(Input.text))
-        {
-            EditorManager.ThrowError("ERROR: " + Name + " property must be valid hexidecimal");
-        }
-        else
-        {
-            SetValue(Input.text);
-        }
+        endEditValidate = false;
     }
     public void DeleteInEditor()
     {
@@ -73,13 +78,21 @@ public class HexProp : GizProperty
         Input = EditorInstance.transform.GetChild(1).GetComponent<TMP_InputField>();
         Input.text = Value;
         Input.characterLimit = Length;
+        //validation
         Input.contentType = TMP_InputField.ContentType.Custom;
         Input.characterValidation = TMP_InputField.CharacterValidation.CustomValidator;
-        Input.inputValidator = new HexValidator();
+        HexValidator v = (HexValidator)ScriptableObject.CreateInstance(typeof(HexValidator));
+        Input.inputValidator = v;
+        //name
         EditorInstance.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = Name;
         //Set up event listeners
         Input.onValueChanged.AddListener((string val) =>
         {
+            UpdateValue();
+        });
+        Input.onEndEdit.AddListener((string val) =>
+        {
+            endEditValidate = true;
             UpdateValue();
         });
     }

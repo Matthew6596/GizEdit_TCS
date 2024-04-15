@@ -853,8 +853,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1068422545}
-        m_TargetAssemblyTypeName: SelectorScript, Assembly-CSharp
+      - m_Target: {fileID: 1068422549}
+        m_TargetAssemblyTypeName: EditorManager, Assembly-CSharp
         m_MethodName: CreateGizmo
         m_Mode: 2
         m_Arguments:
@@ -9596,6 +9596,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58e76029d715a364eb392f9335343acc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sectionReady: 0000000001000000000000000000000000
+  headerData:
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
 --- !u!114 &1068422548
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9621,7 +9640,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   numEachGiz: 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-  SectionsChanged: 0000000000000000000000000000000000
   SelectedGizmo: {fileID: 0}
   PreviousGizmo: {fileID: 0}
   CopiedGizmo: {fileID: 0}
@@ -12736,6 +12754,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1259432730}
+  - component: {fileID: 1259432731}
   m_Layer: 0
   m_Name: plugs
   m_TagString: Untagged
@@ -12758,6 +12777,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1596191334}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1259432731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259432729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9f48e6615b2f2478643e1edd261d27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1260504861
 GameObject:
   m_ObjectHideFlags: 0
@@ -13566,9 +13597,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1068422545}
-        m_TargetAssemblyTypeName: SelectorScript, Assembly-CSharp
-        m_MethodName: ExportFile
+      - m_Target: {fileID: 1068422549}
+        m_TargetAssemblyTypeName: EditorManager, Assembly-CSharp
+        m_MethodName: ExportGizmos
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

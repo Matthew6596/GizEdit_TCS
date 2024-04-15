@@ -7,21 +7,22 @@ using UnityEngine.UI;
 
 public class BoolGroupProp : GizProperty
 {
-    public string Name { get; set; }
+    public string Name {  get; set; }
+    public string[] Names { get; set; }
     public bool[] Values { get; set; }
     public bool[] ValueActive { get; set; }
     public BoolGroupProp(string[] names, bool[] defaultValues, bool[] valueActive)
     {
-        Set(names[0], defaultValues);
+        Set(names, defaultValues);
         ValueActive = valueActive;
     }
     public void SetValue(bool[] value)
     {
         Values = value;
     }
-    public void Set(string name, bool[] value)
+    public void Set(string[] names, bool[] value)
     {
-        Name = name;
+        Names = names;
         Values = value;
     }
     //Unused SetValues
@@ -84,9 +85,9 @@ public class BoolGroupProp : GizProperty
             if (ValueActive[i])
             {
                 insts[i] = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[0], contentArea);
-                inps[i] = EditorInstances[i].transform.GetChild(1).GetComponent<Toggle>();
+                inps[i] = insts[i].transform.GetChild(1).GetComponent<Toggle>();
                 inps[i].isOn = Values[i];
-                insts[i].transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = Name;
+                insts[i].transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = Names[i];
             }
         }
         EditorInstances = insts;
@@ -107,6 +108,14 @@ public class BoolGroupProp : GizProperty
     }
     public string GetValueString()
     {
-        return Values.ToString();
+        string ret = "";
+        for (int i = 0; i < 8; i++)
+        {
+            if (ValueActive[i])
+            {
+                ret += Values[i].ToString()+",";
+            }
+        }
+        return ret;
     }
 }

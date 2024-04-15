@@ -4,71 +4,58 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class GizForce : MonoBehaviour
+public class GizForce : BaseGizmo
 {
-    //PROPERTIES
-    [Header("Force Properties")]
-    public string referenceName="force0";
-    public float resetTime = 0f;
-    public float shakeTime = 0f;
-    public float range = 0f;
-    public bool darkSide = false;
-    public uint endState = 0;
-    public string unknown1 = "00 00 00 ";
-    public string toggleForceUnknown = "FF ";
-    public string unknown2 = "00 00 03 ";
-    public List<GameObject> childrenList = new();
-    public float forceSpeed = 1f;
-    public float resetSpeed = 1f;
-    public string unknown3 = "00 00 00 00 ";
-    public float effectScale = 1f;
-    public string unknown4 = "00 00 00 00 ";
-    public string unknown5 = "";
-    public uint minStudValue = 0;
-    public uint maxStudValue = 0;
-    public float studAngle = 0;
-    public Vector3 studSpawnPosition = Vector3.zero;
-    public float studSpeed = 1.75f;
-    public string duringSfx = "";
-    public string endSfx = "";
-    public string unknown6 = "";
-    
-    [Header("Other")]
-    public Mesh[] typeMeshes;
-    public Material[] typeMaterials;
-    MeshRenderer mrender;
-    MeshFilter mfilter;
-    MeshCollider mcollider;
-
-    public int selectedChild = 0;
-
-    public static string[] endStateNames = { };
-
-
-    public void SetDarkSide(bool _b)
+    public GizForce()
     {
-        darkSide = _b;
-        mrender.material = setMaterial();
+        GizProperties = new GizProperty[]{
+            new StringProp("Name", "force0",16),
+            new Vec3Prop("Position",Vector3.zero),
+            new Float32Prop("Reset Time",0),
+            new Float32Prop("Shake Time",0),
+            new Float32Prop("Range",3),
+            new BoolGroupProp(new string[]{"Dark Side","End State (unknown)","","","","","",""},
+                new bool[]{false,false,false,false,false,false,false,false},new bool[]{true,true,false,false,false,false,false,false}),
+            new HexProp("Unknown 1","00 00 00 "),
+            new BoolProp("Not Togglable",true,"FF "),
+            new HexProp("Unknown 2","00 00 "),
+            new ChildListProp("Force Children",0,DefaultChildManager.defaultChildrenGizmos[2]),
+            new Float32Prop("Force Speed",1),
+            new Float32Prop("Return Speed",1),
+            new HexProp("Unknown 3","00 00 00 00 "),
+            new Float32Prop("Visual Effect Scale",1),
+            new HexProp("Unknown 4","00 00 00 00 "),
+            new VarStringProp("Connected Blowup",""),
+            new Int16Prop("Min Stud Value",0),
+            new Int16Prop("Max Stud Value",0),
+            new AngleProp("Stud Spawn Angle",0),
+            new Vec3Prop("Stud Spawn Pos",Vector3.zero),
+            new Float32Prop("Stud Speed",1.75f),
+            new VarStringProp("Process SFX",""),
+            new VarStringProp("Complete SFX",""),
+            new VarStringProp("Return SFX",""),
+        };
     }
-
-    // Start is called before the first frame update
-    void Start()
+    override public string parentName { get => "forces"; }
+    override public void CheckValues()
     {
-        StartCoroutine(FindParent());
-        tag = "objectGiz";
-        mrender = gameObject.AddComponent<MeshRenderer>();
-        mfilter = gameObject.AddComponent<MeshFilter>();
-        mcollider = gameObject.AddComponent<MeshCollider>();
+        //Visual stuff
         mfilter.mesh = setMesh();
         mcollider.sharedMesh = mfilter.mesh;
-    }
-
-    IEnumerator FindParent()
-    {
-        yield return null;
-        Transform p = GameObject.Find("forces").transform;
-        transform.parent = p;
         mrender.material = setMaterial();
+
+        //Children list
+        ChildListProp childList = (ChildListProp)GizProperties[9];
+        if(childList.Children!=null&&childList.Children.Count>0)
+            foreach(BaseGizmo child in childList.Children)
+            {
+                child.CheckValues();
+            }
+
+        //Name & position
+        name = GizProperties[0].GetValueString();
+        if (name == "") name = "UnnamedForce";
+        transform.position = TypeConverter.ParseVec3(GizProperties[1].GetValueString());
     }
 
     Mesh setMesh()
@@ -78,9 +65,11 @@ public class GizForce : MonoBehaviour
     }
     Material setMaterial()
     {
+        string v = GizProperties[5].GetValueString();
+        bool darkSide = bool.Parse(v[..v.IndexOf(',')]);
         int m = darkSide?1 : 0;
         return transform.parent.GetComponent<MeshRenderer>().materials[m];
-        //int m = pickupTypes.IndexOf(pickupType);
-        //return transform.parent.GetComponent<MeshRenderer>().materials[m];
     }
+    public override string GetGizType() { return "GizForce"; }
+
 }

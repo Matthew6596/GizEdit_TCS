@@ -4,7 +4,7 @@ using UnityEngine;
 
 abstract public class BaseGizmo : MonoBehaviour
 {
-    abstract public GizProperty[] GizProperties { get; set; }
+    public GizProperty[] GizProperties { get; set; }
     abstract public string parentName { get; }
     public MeshRenderer mrender;
     public MeshFilter mfilter;
@@ -55,4 +55,5 @@ abstract public class BaseGizmo : MonoBehaviour
         transform.parent = p;
         CheckValues();
     }
+    abstract public string GetGizType();
 }

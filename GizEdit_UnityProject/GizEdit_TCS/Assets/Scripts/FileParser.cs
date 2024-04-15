@@ -49,10 +49,10 @@ public class FileParser : MonoBehaviour
     public void startLoadGizmos()
     {
         //readObstacles();
-        readBuildits();
-        readForces();
+        //readBuildits();
+        //readForces();
         //Read blowups
-        readPickups();
+        //readPickups();
         //Read lever
         //Read spinner
         //Read minicut
@@ -196,224 +196,7 @@ public class FileParser : MonoBehaviour
         }
 
     }
-    //==============================================BUILDITS==============================================
-    public void readBuildits()
-    {
-        int afterHead = getPosAfter(TypeConverter.getHeader("GizBuildit"));
-        uint numBytes = gm.FSliceInt32(afterHead);
-        uint unknown1 = gm.FSliceInt8(afterHead + B(4));
-        uint numObjs = gm.FSliceInt16(afterHead + B(5));
-        //Header extra
-        //int numObjs = 0;
-        //
-        int startData = afterHead + B(7);
-        int endLocation = B(numBytes) + afterHead;
-        //
 
-        int readLocation = startData;
-        int rc = 0;
-        while (readLocation < endLocation)
-        { //numBytes driven loop
-
-            //Create forceObj
-            GameObject _f = new();
-            GizBuildit _g = _f.AddComponent<GizBuildit>();
-            _f.name = "buildit_" + rc;
-
-            //Parse data
-            _g.referenceName = gm.FSliceString(readLocation, 16);
-            _f.transform.position = new Vector3(gm.FSliceFloat32(readLocation + B(16)), gm.FSliceFloat32(readLocation + B(20)), gm.FSliceFloat32(readLocation + B(24)));
-
-            readLocation += B(29); //prev 28 bytes + 03 byte
-
-            //Child data
-            uint numBuildChildren = gm.FSliceInt8(readLocation);
-            readLocation += B(1);
-            for (int rc2 = 0; rc2 < numBuildChildren; rc2++)
-            {
-                //Create child
-                GameObject _child = new();
-                GizBuilditChild _gfc = _child.AddComponent<GizBuilditChild>();
-                _child.name = "builditchild_" + rc2;
-
-                //Parse child info
-                uint childNameLength = gm.FSliceInt8(readLocation);
-                _gfc.gizName = gm.FSliceString(readLocation + B(1), childNameLength);
-                readLocation += B(childNameLength + 1);
-                _gfc.unknown1 = gm.fhex.Substring(readLocation, B(4));
-                _gfc.animateLength = gm.FSliceFloat32(readLocation + B(4));
-                readLocation += B(8); //Unknown 4 bytes
-                _gfc.isSelected = gm.FSliceInt8(readLocation) != 0;
-                _gfc.unknown2 = gm.fhex.Substring(readLocation + B(1), B(3));
-                readLocation += B(4); //Unknown 3 bytes
-
-                //Assign child
-                _gfc.gizParent = _g.transform;
-                _g.childrenList.Add(_child);
-            }
-
-            //Parse closer data
-            _g.jumpPow = gm.FSliceFloat32(readLocation);
-            _g.minStudValue = gm.FSliceInt16(readLocation+B(4));
-            _g.maxStudValue = gm.FSliceInt16(readLocation + B(6));
-            _g.unknown1 = gm.fhex.Substring(readLocation + B(8), B(2));
-            _g.unknown2 = gm.fhex.Substring(readLocation + B(10), B(5));
-            _g.studPitch = TypeConverter.Int16AngleToFloat(gm.FSliceInt16(readLocation+B(15)));
-            _g.studYaw = TypeConverter.Int16AngleToFloat(gm.FSliceInt16(readLocation+B(17)));
-            readLocation += B(19);
-            _g.studSpawnPosition = new Vector3(gm.FSliceFloat32(readLocation), gm.FSliceFloat32(readLocation + B(4)), gm.FSliceFloat32(readLocation + B(8)));
-            _g.studSpeed = gm.FSliceFloat32(readLocation + B(12));
-            _g.unknown3 = gm.fhex.Substring(readLocation + B(16), B(5));
-            readLocation += B(21);
-            rc++;
-        }
-
-    }
-    //==============================================FORCES==============================================
-    public void readForces()
-    {
-        int afterHead = getPosAfter(TypeConverter.getHeader("GizForce"));
-        uint numBytes = gm.FSliceInt32(afterHead);
-        uint unknown1 = gm.FSliceInt8(afterHead+B(4));
-        uint unknown2 = gm.FSliceInt8(afterHead+B(5));
-        //Header extra
-        //int numObjs = 0;
-        //
-        int startData = afterHead + B(7);
-        int endLocation = B(numBytes) + afterHead;
-        //
-
-        int readLocation = startData;
-        int rc = 0;
-        while (readLocation < endLocation) { //numBytes driven loop
-
-            //Create forceObj
-            GameObject _f = new();
-            GizForce _g = _f.AddComponent<GizForce>();
-            _f.name = "force_" + rc;
-
-            //Parse data
-            _g.referenceName = gm.FSliceString(readLocation, 16);
-            _f.transform.position = new Vector3(gm.FSliceFloat32(readLocation + B(16)), gm.FSliceFloat32(readLocation + B(20)), gm.FSliceFloat32(readLocation + B(24)));
-            _g.resetTime = gm.FSliceFloat32(readLocation + B(28));
-            _g.shakeTime = gm.FSliceFloat32(readLocation + B(32));
-            _g.range = gm.FSliceFloat32(readLocation + B(36));
-            readLocation += B(40);
-            _g.darkSide = gm.fhex[readLocation]=='1';
-            _g.endState = uint.Parse(gm.fhex[readLocation + 1].ToString());
-            _g.unknown1 = gm.fhex.Substring(readLocation + B(1), B(3));
-            //toggle force
-            _g.unknown2 = gm.fhex.Substring(readLocation + B(5), B(3));
-
-            readLocation += B(8);
-
-            //Child data
-            uint numForceChildren = gm.FSliceInt8(readLocation);
-            readLocation += B(1);
-            for(int rc2=0; rc2<numForceChildren; rc2++)
-            {
-                //Create child
-                GameObject _child = new();
-                GizForceChild _gfc = _child.AddComponent<GizForceChild>();
-                _child.name = "forcechild_" + rc2;
-
-                //Parse child info
-                uint childNameLength = gm.FSliceInt8(readLocation);
-                _gfc.gizName = gm.FSliceString(readLocation + B(1), childNameLength);
-                readLocation += B(childNameLength + 1);
-                _gfc.unknown1 = gm.fhex.Substring(readLocation, B(4));
-                _gfc.animateLength = gm.FSliceFloat32(readLocation + B(4));
-                readLocation += B(8); //Unknown 4 bytes
-                _gfc.isSelected = gm.FSliceInt8(readLocation) != 0;
-                _gfc.unknown2 = gm.fhex.Substring(readLocation+B(1), B(5));
-                readLocation += B(6); //Unknown 5 bytes
-
-                //Assign child
-                _gfc.gizParent = _g.transform;
-                _g.childrenList.Add( _child );
-            }
-
-            //Parse closer data
-            _g.forceSpeed = gm.FSliceFloat32(readLocation);
-            _g.resetSpeed = gm.FSliceFloat32(readLocation+B(4));
-            _g.unknown3 = gm.fhex.Substring(readLocation + B(8), B(4));
-            readLocation += B(12); //Unknown 4 bytes
-            _g.effectScale = gm.FSliceFloat32(readLocation);
-            _g.unknown4 = gm.fhex.Substring(readLocation + B(4), B(4));
-            readLocation += B(8); //Unknown 4 bytes
-
-            uint unknownStringLength = gm.FSliceInt8(readLocation);
-            string unknownString = gm.FSliceString(readLocation + B(1), unknownStringLength);
-            _g.unknown5 = unknownString;
-            readLocation += B(unknownStringLength + 1);
-
-            _g.minStudValue = gm.FSliceInt16(readLocation);
-            _g.maxStudValue = gm.FSliceInt16(readLocation+B(2));
-            _g.studAngle = TypeConverter.Int16AngleToFloat(gm.FSliceInt16(readLocation+B(4)));
-            readLocation += B(6);
-            _g.studSpawnPosition = new Vector3(gm.FSliceFloat32(readLocation),gm.FSliceFloat32(readLocation+B(4)),gm.FSliceFloat32(readLocation+B(8)));
-            _g.studSpeed = gm.FSliceFloat32(readLocation+B(12));
-            readLocation += B(16);
-
-            uint sfxNameLength = gm.FSliceInt8(readLocation);
-            readLocation += B(1);
-            _g.duringSfx = gm.FSliceString(readLocation, sfxNameLength);
-            readLocation += B(sfxNameLength);
-            sfxNameLength = gm.FSliceInt8(readLocation);
-            readLocation += B(1);
-            _g.endSfx = gm.FSliceString(readLocation, sfxNameLength);
-            readLocation += B(sfxNameLength);
-            sfxNameLength = gm.FSliceInt8(readLocation);
-            readLocation += B(1);
-            _g.unknown6 = gm.FSliceString(readLocation, sfxNameLength);
-            readLocation += B(sfxNameLength);
-
-            rc++;
-        }
-
-    }
-    //==============================================PICKUPS==============================================
-    public void readPickups()
-    {
-        int afterHead = getPosAfter(TypeConverter.getHeader("GizmoPickup"));
-        uint numBytes = gm.FSliceInt32(afterHead);
-        //Header extra
-        uint unknownNum = gm.FSliceInt32(afterHead + B(4));
-        uint numPickups = gm.FSliceInt32(afterHead + B(8));
-        //
-        int startData;
-        if (unknownNum == 7) { startData = afterHead + B(24); }
-        else if (unknownNum == 4) { startData = afterHead + B(16); }
-        else { Debug.Log("ERROR: UNKNOWN PICKUP CASE: "+unknownNum); return; }
-
-        int readLocation = startData;
-        for (int rp = 0; rp < numPickups; rp++)
-        {
-            //Parsing pickup data
-            string pickupName = gm.FSliceString(readLocation, 8);
-            float pickupX = gm.FSliceFloat32(readLocation + B(8));
-            float pickupY = gm.FSliceFloat32(readLocation + B(12));
-            float pickupZ = gm.FSliceFloat32(readLocation + B(16));
-            string pickupType = gm.FSliceString(readLocation+B(20), 1);
-            uint spawnType = gm.FSliceInt8(readLocation+B(21));
-            uint spawnGroup = gm.FSliceInt8(readLocation+B(22));
-            char ptype = pickupType[0];
-            if(ptype!='s'&&ptype != 'g' && ptype != 'b' && ptype != 'p' && ptype != 'm' && ptype != 'r' && ptype != 'u' && ptype != 'h' && ptype != 'c' && ptype != 't') { Debug.Log("UNKNOWN PICKUP TYPE: " + ptype); return; }
-            if (spawnType != 0 && spawnType != 2) { Debug.Log("UNKNOWN PICKUP SPAWN TYPE: " + spawnType); return; }
-
-            //Creating Pickup Object
-            GameObject _pickupObj = new();
-            GizmoPickup _props = _pickupObj.AddComponent<GizmoPickup>();
-            //_props.pickupType = ptype.ToString();
-            _pickupObj.transform.position = new Vector3(pickupX, pickupY, pickupZ);
-            //_props.pickupName = pickupName;
-            _pickupObj.name = "pickup_"+rp;
-            //_props.spawnType = spawnType;
-            //_props.spawnGroup = spawnGroup;
-
-            readLocation += B(8 + 12 + 3);
-        }
-    }
     //==============================================PANELS==============================================
     void readPanels()
     {
@@ -481,7 +264,7 @@ public class FileParser : MonoBehaviour
             compileBuildit();
             compileForce();
             compileBlowup();
-            compilePickups();
+            //compilePickups();
             compileLever();
             compileSpinner();
             compileMinicut();
@@ -523,7 +306,7 @@ public class FileParser : MonoBehaviour
         }
         else
         {
-            int readLocation = afterHead + B(7);
+            /*int readLocation = afterHead + B(7);
             string section = gm.fhex.Substring(afterHead - B(14), B(21));
 
             //Get all buildits
@@ -563,7 +346,7 @@ public class FileParser : MonoBehaviour
             uint _nobjs = (uint)_f.Length;
             section = TypeConverter.SetStringSlice(section, TypeConverter.Int32ToHex(_nbytes), B(14), B(4));
             section = TypeConverter.SetStringSlice(section, TypeConverter.Int16ToHex(_nobjs), B(19), B(2));
-            cHex += section;
+            cHex += section;*/
         }
     }
     //==============================================FORCE==============================================
@@ -578,7 +361,7 @@ public class FileParser : MonoBehaviour
         }
         else
         {
-            int readLocation = afterHead + B(7);
+            /*int readLocation = afterHead + B(7);
             string section = gm.fhex.Substring(afterHead - B(12), B(19));
 
             GizForce[] _f = new GizForce[ss.gizParents.GetChild(2).childCount];
@@ -628,7 +411,7 @@ public class FileParser : MonoBehaviour
             uint _nobjs = (uint)_f.Length;
             section = TypeConverter.SetStringSlice(section, TypeConverter.Int32ToHex(_nbytes), B(12), B(4));
             section = TypeConverter.SetStringSlice(section, TypeConverter.Int16ToHex(_nobjs), B(17), B(2));
-            cHex += section;
+            cHex += section;*/
         }
         
     }
@@ -641,45 +424,7 @@ public class FileParser : MonoBehaviour
         cHex += section;
     }
     //==============================================PICKUPS==============================================
-    void compilePickups()
-    {
-        int afterHead = getPosAfter(TypeConverter.headerHex[4]);
-        uint numBytes = gm.FSliceInt32(afterHead);
-        uint unknownNum = gm.FSliceInt32(afterHead + B(4));
-        uint numObjs = gm.FSliceInt32(afterHead + B(8));
-        if (!ss.changedGizmoSections[4])
-        {
-            string pickupSection = gm.fhex.Substring(afterHead - B(15), B(19 + numBytes));
-            cHex += pickupSection;
-        }
-        else
-        {
-            int readLocation=afterHead+B(4);
-            int addAmt = 0;
-            if (unknownNum == 7) { addAmt = B(20); }
-            else if (unknownNum == 4) { addAmt = B(12); }
-            readLocation += addAmt;
-            string pickupSection = gm.fhex.Substring(afterHead-B(15),B(19)+addAmt);
 
-            GizmoPickup[] _p = new GizmoPickup[ss.gizParents.GetChild(4).childCount];
-            for (int j=0; j<_p.Length; j++) { _p[j] = ss.gizParents.GetChild(4).GetChild(j).GetComponent<GizmoPickup>(); }
-            foreach (GizmoPickup p in _p)
-            {
-                //string nameHex = TypeConverter.StringToHex(p.pickupName,8);
-                string posHex = TypeConverter.Float32ToHex(p.transform.position.x);
-                posHex += TypeConverter.Float32ToHex(p.transform.position.y) + TypeConverter.Float32ToHex(p.transform.position.z);
-                //string typeHex = TypeConverter.StringToHex(p.pickupType, 1);
-                //string spawnHex = TypeConverter.Int8ToHex(p.spawnType)+" ";
-                //string groupHex = TypeConverter.Int8ToHex(p.spawnGroup)+" ";
-                //pickupSection += nameHex + posHex + typeHex +spawnHex+groupHex;
-            }
-            uint _nbytes = (uint)((pickupSection.Length / 3) -19);
-            uint _nobjs = (uint)_p.Length;
-            pickupSection = TypeConverter.SetStringSlice(pickupSection, TypeConverter.Int32ToHex(_nbytes), B(15), B(4));
-            pickupSection = TypeConverter.SetStringSlice(pickupSection, TypeConverter.Int32ToHex(_nobjs), B(23), B(4));
-            cHex += pickupSection;
-        }
-    }
     //==============================================LEVER==============================================
     void compileLever()
     {

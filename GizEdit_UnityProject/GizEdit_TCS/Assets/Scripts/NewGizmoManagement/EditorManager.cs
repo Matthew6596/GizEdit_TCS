@@ -13,7 +13,7 @@ public class EditorManager : MonoBehaviour
         "grapples", "plugs", "technos" //unused
     };
     public int[] numEachGiz = new int[17];
-    public bool[] SectionsChanged = new bool[17]; //temp?
+    //public bool[] SectionsChanged = new bool[17];
 
     public GameObject SelectedGizmo;
     public GameObject PreviousGizmo;
@@ -25,12 +25,6 @@ public class EditorManager : MonoBehaviour
     {
         instance = this;
         canvas = GameObject.Find("Canvas").transform;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public static void ThrowError(string errorMsg)
@@ -74,7 +68,7 @@ public class EditorManager : MonoBehaviour
     }
     public void ExportGizmos()
     {
-        StartCoroutine(GizmosWriter.instance.CompileGizmos(GetGizmos(), numEachGiz, SectionsChanged));
+        StartCoroutine(GizmosWriter.instance.CompileGizmos(GetGizmos(), numEachGiz));
     }
     public BaseGizmo[] GetGizmos()
     {

@@ -1,6 +1,7 @@
 using SFB;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GizmosReader : MonoBehaviour
@@ -22,6 +23,7 @@ public class GizmosReader : MonoBehaviour
     {
         gm = GameManager.gmInstance;
         instance = this;
+        sectionReady = new bool[] { false, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false };
     }
 
     public void OpenGizFile()
@@ -72,7 +74,8 @@ public class GizmosReader : MonoBehaviour
         gm.fhex = _b;
         StartCoroutine(ReadGizmos());
     }
-    bool[] sectionReady = {false,false,false, false, true, false, false, false, false, false, false, false, false, false, false, false, false };
+    public bool[] sectionReady;
+    public string[] headerData = new string[17];
     public IEnumerator ReadGizmos()
     {
         ReadLocation = 4; //skip 01 00 00 00
@@ -84,7 +87,9 @@ public class GizmosReader : MonoBehaviour
             {
                 uint sectionLength = gm.FSliceInt32(ReadLocation); ReadLocation += 4;
                 if (sectionReady[i])
+                {
                     ReadGizmoSection(i);
+                }
                 else
                     ReadLocation += sectionLength;
             }
@@ -125,14 +130,19 @@ public class GizmosReader : MonoBehaviour
                 ReadLocation += 3;
                 return n;
             //Force
-            case 2: return n;
+            case 2:
+                uint forceH = gm.FSliceInt8(ReadLocation); ReadLocation += 1;
+                n = gm.FSliceInt16(ReadLocation); ReadLocation += 2;
+                if (forceH != 16) Debug.LogWarning("Update to force header reader needed: "+forceH);
+                return n;
             //Blowup
             case 3: return n;
             //Pickup
             case 4:
                 uint pickupH = gm.FSliceInt32(ReadLocation); ReadLocation += 4;
                 n = gm.FSliceInt32(ReadLocation); ReadLocation += 8;
-                if (pickupH == 7) ReadLocation += 8;
+                if (pickupH == 7) { headerData[4]=gm.fhex.Substring((int)ReadLocation*3,24); ReadLocation += 8; }
+                else headerData[4]=pickupH.ToString();
                 return n;
             //Lever
             case 5: return n;
@@ -171,7 +181,7 @@ public class GizmosReader : MonoBehaviour
             //Buildit
             case 1: return g;
             //Force
-            case 2: return g;
+            case 2: return obj.AddComponent<GizForce>();
             //Blowup
             case 3: return g;
             //Pickup
@@ -200,8 +210,23 @@ public class GizmosReader : MonoBehaviour
             case 15: return g;
             //ShadowEditor
             case 16: return g;
+            //ObstacleChild
+            case 17: return g;
+            //BuilditChild
+            case 18: return g;
+            //ForceChild
+            case 19: return obj.AddComponent<GizForceChild>();
+            //BlowupChild
+            case 20: return g;
         }
         Destroy(obj);
         return null;
+    }
+    static List<string> gizTypes = new List<string>{"GizObstacle","GizBuildit","GizForce","blowup","GizmoPickup","Lever","Spinner","MiniCut",
+    "Tube","ZipUp","GizTurret","BombGenerator","Panel","HatMachine","PushBlocks","Torp Machine","ShadowEditor","GizObstacleChild",
+        "GizBuilditChild","GizForceChild","blowupChild"};
+    public static int GetGizType(string typeName)
+    {
+        return gizTypes.IndexOf(typeName);
     }
 }

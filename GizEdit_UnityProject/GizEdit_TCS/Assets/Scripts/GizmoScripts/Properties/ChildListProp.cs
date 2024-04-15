@@ -58,8 +58,7 @@ public class ChildListProp : GizProperty
         for (int i=0; i<_l; i++)
         {
             GameObject c = new();
-            BaseGizmo g = c.AddComponent<BaseGizmo>();
-            g = DefaultChild;
+            BaseGizmo g = GizmosReader.CreateGizmo(GizmosReader.GetGizType(DefaultChild.GetGizType()), c);
             g.ReadFromHex();
             Children.Add(g);
         }
@@ -71,9 +70,16 @@ public class ChildListProp : GizProperty
     public Transform ChildrenParent { get; set; }
     public void UpdateValue()
     {
-        DestroyChildrenProperties();
-        SetValue(Input.value);
-        CreateChildrenProperties();
+        if (Children.Count > 0)
+        {
+            DestroyChildrenProperties();
+            SetValue(Input.value);
+            CreateChildrenProperties();
+        }
+        else
+        {
+
+        }
     }
     public void DeleteInEditor()
     {
@@ -87,11 +93,13 @@ public class ChildListProp : GizProperty
         EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[1], contentArea);
         //Get Inputs
         ChildrenParent = EditorInstance.transform.GetChild(0).GetChild(0).GetChild(0);
-        Input = ChildrenParent.GetChild(1).GetComponent<TMP_Dropdown>();
+        Input = ChildrenParent.GetChild(1).GetChild(1).GetComponent<TMP_Dropdown>();
         AddBtn = ChildrenParent.GetChild(2).GetChild(0).GetComponent<Button>();
         RemoveBtn = ChildrenParent.GetChild(2).GetChild(1).GetComponent<Button>();
         //Create dropdown options
         List<TMP_Dropdown.OptionData> options = new();
+        Input.options.Clear();
+        if (Children == null) Children = new();
         foreach (BaseGizmo child in Children)
         {
             options.Add(new TMP_Dropdown.OptionData(child.GizProperties[0].GetValueString()));
@@ -99,28 +107,52 @@ public class ChildListProp : GizProperty
         Input.AddOptions(options);
         //Set name and selected option
         Input.value = Value;
-        EditorInstance.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = Name;
+        ChildrenParent.GetChild(1).GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = Name;
         //Create children properties
-        CreateChildrenProperties();
+        if(Children.Count>0)
+            CreateChildrenProperties();
         //Set up event listeners
         AddBtn.onClick.AddListener(() => {
-            //Create new child
-            GameObject c = new();
-            BaseGizmo g = c.AddComponent<BaseGizmo>();
-            g = DefaultChild;
-            Children.Add(g);
-            //Add child to dropdown
-            List<TMP_Dropdown.OptionData> _o = new(){new TMP_Dropdown.OptionData(g.GizProperties[0].GetValueString())};
-            Input.AddOptions(_o);
-            Input.value = Children.Count-1;
+            if (Children.Count < 255)
+            {
+                //Create new child
+                GameObject c = new();
+                BaseGizmo g = GizmosReader.CreateGizmo(GizmosReader.GetGizType(DefaultChild.GetGizType()), c);
+                Children.Add(g);
+                //Add child to dropdown
+                List<TMP_Dropdown.OptionData> _o = new() { new TMP_Dropdown.OptionData(g.GizProperties[0].GetValueString()) };
+                Input.AddOptions(_o);
+                Input.value = Children.Count - 1;
+
+                if (Children.Count == 1)
+                {
+                    UpdateValue();
+                }
+            }
         });
         RemoveBtn.onClick.AddListener(() => {
-            //Remove from this
-            Children.RemoveAt(Input.value);
-            //Remove from dropdown
-            Input.options.RemoveAt(Input.value);
-            Input.value = 0;
-            UpdateValue();
+            if (Children.Count > 0)
+            {
+                int removedChild = Input.value;
+                //Remove from this
+                Children.RemoveAt(removedChild);
+                //Remove from dropdown
+                Input.options.RemoveAt(removedChild);
+
+                Input.value = 0;
+                UpdateValue();
+                Input.value = 1;
+                Input.value = 0;
+
+                if (removedChild == 0)
+                {
+                    UpdateValue();
+                    if (Children.Count <= 0)
+                    {
+                        DestroyChildrenProperties();
+                    }
+                }
+            }
         });
         Input.onValueChanged.AddListener((int val) =>
         {
@@ -142,11 +174,15 @@ public class ChildListProp : GizProperty
     }
     void DestroyChildrenProperties()
     {
-        BaseGizmo child = Children[Value];
+        for(int i=ChildrenParent.childCount-1; i>=3; i--)
+        {
+            GameObject.Destroy(ChildrenParent.GetChild(i).gameObject);
+        }
+        /*BaseGizmo child = Children[Value];
         foreach (GizProperty prop in child.GizProperties)
         {
             prop.DeleteInEditor();
-        }
+        }*/
     }
     public string GetValueString()
     {

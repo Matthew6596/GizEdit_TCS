@@ -2,25 +2,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GizForceChild : MonoBehaviour
+public class GizForceChild : BaseGizmo
 {
-    public Transform gizParent;
-    [Header("Force Child Properties")]
-    public string gizName = "";
-    public string unknown1= "00 00 80 3F ";
-    public float animateLength = 2f;
-    public bool isSelected = false;
-    public string unknown2 = "00 00 00 00 00 ";
+    public GizForceChild()
+    {
+        GizProperties = new GizProperty[]
+        {
+            new VarStringProp("Child Name",""),
+            new Float32Prop("Unknown 1",1),
+            new Float32Prop("Animate Length",2),
+            new BoolProp("Not Selected",true,"01 "),
+            new HexProp("Unknown 2","00 00 00 00 00 "),
+        };
+    }
 
-    void Start()
+    public override string parentName { get => "plugs"; } //doesn't matter where child goes, its basically just a property
+
+    public override void CheckValues()
     {
-        StartCoroutine(FindParent());
-        tag = "gizChild";
+        name = GizProperties[0].GetValueString();
+        if (name == "") name = "UnnamedForceChild";
     }
-    IEnumerator FindParent()
-    {
-        yield return null;
-        transform.parent = gizParent;
-    }
+    public override string GetGizType() { return "GizForceChild"; }
 
 }

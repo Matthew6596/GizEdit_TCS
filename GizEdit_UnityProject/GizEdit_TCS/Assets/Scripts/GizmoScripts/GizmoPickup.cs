@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class GizmoPickup : BaseGizmo
 {
-    override public GizProperty[] GizProperties { get; set; }
-
     public GizmoPickup()
     {
         GizProperties = new GizProperty[]{
@@ -47,4 +45,6 @@ public class GizmoPickup : BaseGizmo
         int m = int.Parse(GizProperties[2].GetValueString());
         return transform.parent.GetComponent<MeshRenderer>().materials[m];
     }
+
+    public override string GetGizType() { return "GizmoPickup"; }
 }
