@@ -1,9 +1,17 @@
 # GizEdit_TCS
 Modding tool for the .GIZ file in Lego Star Wars: The Complete Saga
 # Releases
-Version Number Guide: a.b.c
 
-| a: Milestone Version | b: Feature Update/Addition | c: Minor Update/Fix |
+> [!WARNING]
+> Make sure to have a backup of your files. I ain't a software engineer.
+
+[See Releases Here!](https://github.com/Matthew6596/GizEdit_TCS/releases)
+
+### Version Number Guide:
+
+> Version example: a.b.c
+> 
+> a: Milestone Version | b: Feature Update/Addition | c: Minor Update/Fix
 
 Milestones:
 
@@ -15,4 +23,4 @@ Milestones:
 
 
 # Documentation
-Link to .GIZ file documentation: https://docs.google.com/document/d/1PWkTTYV24VRD4kOzCix7olVNWpKDcS9S-b4No8HwzpI/edit?usp=sharing
+[Link to .GIZ file documentation google drive](https://docs.google.com/document/d/1PWkTTYV24VRD4kOzCix7olVNWpKDcS9S-b4No8HwzpI/edit?usp=sharing)
