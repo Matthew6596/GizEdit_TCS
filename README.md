@@ -21,4 +21,4 @@ Milestones:
 
 # [Bug Report / Feature Request](https://github.com/Matthew6596/GizEdit_TCS/issues)
 
-# [Documentation](https://docs.google.com/document/d/1PWkTTYV24VRD4kOzCix7olVNWpKDcS9S-b4No8HwzpI/edit?usp=sharing)
+# [Documentation](https://drive.google.com/drive/folders/1Lf18eC2GNbAv5SkL5SZwW-e2rZf2snLM?usp=sharing)
