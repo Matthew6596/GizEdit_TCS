@@ -8,11 +8,14 @@ public class GizmosWriter : MonoBehaviour
 {
     GameManager gm;
     static public GizmosWriter instance;
+    static public IGizmosWriter writer;
 
     private void Start()
     {
         instance = this;
         gm = GameManager.gmInstance;
+
+        writer = new TCSGizmosWriter();
     }
 
     public int getPosAfter(string _val)
@@ -49,10 +52,10 @@ public class GizmosWriter : MonoBehaviour
         cHex = "01 00 00 00 ";
 
         //Gizmo Sections
-        for(int i=0; i<17; i++)
+        for (int i = 0; i < numberOfEachGizmo.Length; i++)
         {
             yield return null;
-            ConvertSectionToHex(i, gizsDone, GetExtraHeaderStuff(i));
+            ConvertSectionToHex(i, gizsDone, writer.GetExtraHeaderStuff(i,numberOfEachGizmo));
             gizsDone += numberOfEachGizmo[i];
             //progress bar
         }
@@ -98,10 +101,10 @@ public class GizmosWriter : MonoBehaviour
     }
     public void ConvertSectionToHex(int compileSection, int gizsDone, string extraHeaderStuff)
     {
-        string hh = TypeConverter.headerHex[compileSection];
+        string hh = writer.headerHex[compileSection];
         int afterHead = getPosAfter(hh);
         uint numBytes = gm.FSliceInt32(afterHead/3);
-        if (GizmosReader.instance.sectionReady[compileSection])
+        if (GizmosReader.reader.sectionReady[compileSection])
         {
             string r = ConvertGizmosToHex(compileSection, gizsDone);
             cHex += hh + TypeConverter.Int32ToHex((uint)(r.Length+extraHeaderStuff.Length) / 3) + extraHeaderStuff + r;
@@ -110,61 +113,5 @@ public class GizmosWriter : MonoBehaviour
         {
             cHex += gm.fhex.Substring(afterHead - hh.Length, hh.Length + B(4 + numBytes));
         }
-    }
-    public string GetExtraHeaderStuff(int gizSection)
-    {
-        string ret="";
-        string helper1 = "";
-        switch (gizSection)
-        {
-            //Obstacle
-            case 0: return"";
-            //Buildit
-            case 1: return "09 " + TypeConverter.Int16ToHex((uint)numOfEachGiz[1]);
-            //Force
-            case 2:
-                helper1 = TypeConverter.Int16ToHex((uint)numOfEachGiz[2]);
-                return "10 "+helper1;
-            //Blowup
-            case 3: return"";
-            //Pickup
-            case 4:
-                helper1 = GizmosReader.instance.headerData[4];
-                if (helper1.Length > 0)
-                {
-                    if (helper1.Length > 1) ret = "07 00 00 00 " + TypeConverter.Int32ToHex((uint)numOfEachGiz[4])+"01 00 00 00 "+helper1;
-                    else { ret = "0" + helper1 + " 00 00 00 " + TypeConverter.Int32ToHex((uint)numOfEachGiz[4])+"01 00 00 00 "; }
-                }
-                else
-                {
-                    ret = "07 00 00 00 " + TypeConverter.Int32ToHex((uint)numOfEachGiz[4]) + "01 00 00 00 00 00 20 41 00 00 80 3F ";
-                }
-                return ret;
-            //Lever
-            case 5: return"";
-            //Spinner
-            case 6: return"";
-            //Minicut
-            case 7: return"";
-            //Tube
-            case 8: return"";
-            //ZipUp
-            case 9: return"";
-            //Turret
-            case 10: return"";
-            //BombGenerator
-            case 11: return"";
-            //Panel
-            case 12: return"";
-            //HatMachine
-            case 13: return"";
-            //PushBlocks
-            case 14: return"";
-            //TorpMachine
-            case 15: return"";
-            //ShadowEditor
-            case 16: return"";
-        }
-        return "";
     }
 }

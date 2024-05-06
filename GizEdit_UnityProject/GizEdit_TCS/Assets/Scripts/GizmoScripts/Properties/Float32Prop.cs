@@ -35,8 +35,8 @@ public class Float32Prop : GizProperty
     }
     public void ReadFromHex()
     {
-        SetValue(GameManager.gmInstance.FSliceFloat32(GizmosReader.ReadLocation));
-        GizmosReader.ReadLocation += 4;
+        SetValue(GameManager.gmInstance.FSliceFloat32(GizmosReader.reader.ReadLocation));
+        GizmosReader.reader.ReadLocation += 4;
     }
     public GameObject EditorInstance { get; set; }
     public TMP_InputField Input { get; set; }

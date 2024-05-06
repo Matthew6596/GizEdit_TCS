@@ -51,14 +51,14 @@ public class ChildListProp : GizProperty
     }
     public void ReadFromHex()
     {
-        if (inc03) GizmosReader.ReadLocation++;
+        if (inc03) GizmosReader.reader.ReadLocation++;
         Children = new();
-        uint _l = GameManager.gmInstance.FSliceInt8(GizmosReader.ReadLocation);
-        GizmosReader.ReadLocation++;
+        uint _l = GameManager.gmInstance.FSliceInt8(GizmosReader.reader.ReadLocation);
+        GizmosReader.reader.ReadLocation++;
         for (int i=0; i<_l; i++)
         {
             GameObject c = new();
-            BaseGizmo g = GizmosReader.CreateGizmo(GizmosReader.GetGizType(DefaultChild.GetGizType()), c);
+            BaseGizmo g = GizmosReader.instance.CreateGizmo(GizmosReader.GetGizType(DefaultChild.GetGizType()), c);
             g.ReadFromHex();
             Children.Add(g);
         }
@@ -90,7 +90,13 @@ public class ChildListProp : GizProperty
         if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
 
         //Create prop prefab
+        GameObject.Instantiate(GameManager.gmInstance.propPrefabs[7], contentArea); //adding spacing
+        GameObject.Instantiate(GameManager.gmInstance.propPrefabs[7], contentArea);
+        GameObject.Instantiate(GameManager.gmInstance.propPrefabs[7], contentArea);
         EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[1], contentArea);
+        GameObject.Instantiate(GameManager.gmInstance.propPrefabs[7], contentArea); //adding spacing
+        GameObject.Instantiate(GameManager.gmInstance.propPrefabs[7], contentArea);
+        GameObject.Instantiate(GameManager.gmInstance.propPrefabs[7], contentArea);
         //Get Inputs
         ChildrenParent = EditorInstance.transform.GetChild(0).GetChild(0).GetChild(0);
         Input = ChildrenParent.GetChild(1).GetChild(1).GetComponent<TMP_Dropdown>();
@@ -117,7 +123,7 @@ public class ChildListProp : GizProperty
             {
                 //Create new child
                 GameObject c = new();
-                BaseGizmo g = GizmosReader.CreateGizmo(GizmosReader.GetGizType(DefaultChild.GetGizType()), c);
+                BaseGizmo g = GizmosReader.instance.CreateGizmo(GizmosReader.GetGizType(DefaultChild.GetGizType()), c);
                 Children.Add(g);
                 //Add child to dropdown
                 List<TMP_Dropdown.OptionData> _o = new() { new TMP_Dropdown.OptionData(g.GizProperties[0].GetValueString()) };

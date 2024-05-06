@@ -35,8 +35,8 @@ public class Int8Prop : GizProperty
     }
     public void ReadFromHex()
     {
-        SetValue(GameManager.gmInstance.FSliceInt8(GizmosReader.ReadLocation));
-        GizmosReader.ReadLocation += 1;
+        SetValue(GameManager.gmInstance.FSliceInt8(GizmosReader.reader.ReadLocation));
+        GizmosReader.reader.ReadLocation += 1;
     }
     public GameObject EditorInstance { get; set; }
     public TMP_InputField Input { get; set; }

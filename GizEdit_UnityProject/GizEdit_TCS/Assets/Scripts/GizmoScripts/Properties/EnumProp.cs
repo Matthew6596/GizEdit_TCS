@@ -39,7 +39,7 @@ public class EnumProp : GizProperty
     }
     public void ReadFromHex()
     {
-        string val = GameManager.gmInstance.fhex.Substring(GizmosReader.B(GizmosReader.ReadLocation), OptionHex[0].Length);
+        string val = GameManager.gmInstance.fhex.Substring(GizmosReader.B(GizmosReader.reader.ReadLocation), OptionHex[0].Length);
         for(int i=0; i<OptionHex.Length; i++)
         {
             if (val == OptionHex[i])
@@ -48,7 +48,7 @@ public class EnumProp : GizProperty
                 break;
             }
         }
-        GizmosReader.ReadLocation += (uint)OptionHex[0].Length/3;
+        GizmosReader.reader.ReadLocation += (uint)OptionHex[0].Length/3;
     }
     public GameObject EditorInstance { get; set; }
     public TMP_Dropdown Input { get; set; }

@@ -30,7 +30,10 @@ public class EditorManager : MonoBehaviour
     public static void ThrowError(string errorMsg)
     {
         //create error popup
-        Instantiate(GameManager.gmInstance.popupPrefab, canvas);
+        GameObject popup = GameManager.gmInstance.defaultPopup;
+        popup.transform.GetChild(0).GetChild(1).gameObject.GetComponent<TMP_Text>().text = "Error";
+        popup.transform.GetChild(1).GetComponent<TMP_Text>().text = errorMsg;
+        popup.SetActive(true);
     }
     public void OpenPopup(GameObject _popupGroup){_popupGroup.SetActive(true);}
     public void ClosePopup(GameObject _popupGroup){_popupGroup.SetActive(false);}
@@ -41,7 +44,7 @@ public class EditorManager : MonoBehaviour
     {
         int gizType = _options.value;
         GameObject obj = new();
-        BaseGizmo newGiz = GizmosReader.CreateGizmo(gizType,obj);
+        BaseGizmo newGiz = GizmosReader.instance.CreateGizmo(gizType,obj);
     }
     public void DeleteGizmo()
     {

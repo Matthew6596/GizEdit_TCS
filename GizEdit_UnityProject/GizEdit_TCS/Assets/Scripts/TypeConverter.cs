@@ -2,10 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using TMPro;
-using UnityEngine.UI;
-using Unity.VisualScripting;
-using System.ComponentModel;
 
 public class TypeConverter : MonoBehaviour
 {
@@ -82,54 +78,6 @@ public class TypeConverter : MonoBehaviour
         }
         return r;
     }
-
-    static public string getHeader(string titleName)
-    {
-        if (titleName == "GizObstacle") { return "0B 00 00 00 47 69 7A 4F 62 73 74 61 63 6C 65 "; }
-        else if (titleName == "GizBuildit") { return "0A 00 00 00 47 69 7A 42 75 69 6C 64 69 74 "; }
-        else if (titleName == "GizForce") { return "08 00 00 00 47 69 7A 46 6F 72 63 65 "; }
-        else if (titleName == "blowup") { return "06 00 00 00 62 6C 6F 77 75 70 "; }
-        else if (titleName == "GizmoPickup") { return "0B 00 00 00 47 69 7A 6D 6F 50 69 63 6B 75 70 "; }
-        else if (titleName == "Lever") { return "05 00 00 00 4C 65 76 65 72 "; }
-        else if (titleName == "Spinner") { return "07 00 00 00 53 70 69 6E 6E 65 72 "; }
-        else if (titleName == "MiniCut") { return "07 00 00 00 4D 69 6E 69 43 75 74 "; }
-        else if (titleName == "Tube") { return "04 00 00 00 54 75 62 65 "; }
-        else if (titleName == "ZipUp") { return "05 00 00 00 5A 69 70 55 70 "; }
-        else if (titleName == "GizTurret") { return "09 00 00 00 47 69 7A 54 75 72 72 65 74 "; }
-        else if (titleName == "BombGenerator") { return "0D 00 00 00 42 6F 6D 62 47 65 6E 65 72 61 74 6F 72 "; }
-        else if (titleName == "Panel") { return "05 00 00 00 50 61 6E 65 6C "; }
-        else if (titleName == "HatMachine") { return "0A 00 00 00 48 61 74 4D 61 63 68 69 6E 65 "; }
-        else if (titleName == "PushBlocks") { return "0A 00 00 00 50 75 73 68 42 6C 6F 63 6B 73 "; }
-        else if (titleName == "Torp Machine") { return "0C 00 00 00 54 6F 72 70 20 4D 61 63 68 69 6E 65 "; }
-        else if (titleName == "ShadowEditor") { return "0C 00 00 00 53 68 61 64 6F 77 45 64 69 74 6F 72 "; }
-        else if (titleName == "Grapple") { return "07 00 00 00 47 72 61 70 70 6C 65 "; }
-        else if (titleName == "Plug") { return "04 00 00 00 50 6C 75 67 "; }
-        else if (titleName == "Techno") { return "06 00 00 00 54 65 63 68 6E 6F "; }
-        else { return ""; }
-    }
-    static public string[] headerHex =
-    {
-        "0B 00 00 00 47 69 7A 4F 62 73 74 61 63 6C 65 ",
-        "0A 00 00 00 47 69 7A 42 75 69 6C 64 69 74 ",
-        "08 00 00 00 47 69 7A 46 6F 72 63 65 ",
-        "06 00 00 00 62 6C 6F 77 75 70 ",
-        "0B 00 00 00 47 69 7A 6D 6F 50 69 63 6B 75 70 ",
-        "05 00 00 00 4C 65 76 65 72 ",
-        "07 00 00 00 53 70 69 6E 6E 65 72 ",
-        "07 00 00 00 4D 69 6E 69 43 75 74 ",
-        "04 00 00 00 54 75 62 65 ",
-        "05 00 00 00 5A 69 70 55 70 ",
-        "09 00 00 00 47 69 7A 54 75 72 72 65 74 ",
-        "0D 00 00 00 42 6F 6D 62 47 65 6E 65 72 61 74 6F 72 ",
-        "05 00 00 00 50 61 6E 65 6C ",
-        "0A 00 00 00 48 61 74 4D 61 63 68 69 6E 65 ",
-        "0A 00 00 00 50 75 73 68 42 6C 6F 63 6B 73 ",
-        "0C 00 00 00 54 6F 72 70 20 4D 61 63 68 69 6E 65 ",
-        "0C 00 00 00 53 68 61 64 6F 77 45 64 69 74 6F 72 ",
-        "07 00 00 00 47 72 61 70 70 6C 65 ",
-        "04 00 00 00 50 6C 75 67 ",
-        "06 00 00 00 54 65 63 68 6E 6F ",
-    };
 
     static public uint hexCharToInt(uint _char)
     {

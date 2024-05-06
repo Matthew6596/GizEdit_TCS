@@ -37,8 +37,8 @@ public class HexProp : GizProperty
     }
     public void ReadFromHex()
     {
-        SetValue(GameManager.gmInstance.fhex.Substring((int)GizmosReader.ReadLocation * 3, Length));
-        GizmosReader.ReadLocation += (uint)Length/3;
+        SetValue(GameManager.gmInstance.fhex.Substring((int)GizmosReader.reader.ReadLocation * 3, Length));
+        GizmosReader.reader.ReadLocation += (uint)Length/3;
     }
     public GameObject EditorInstance { get; set; }
     public TMP_InputField Input { get; set; }

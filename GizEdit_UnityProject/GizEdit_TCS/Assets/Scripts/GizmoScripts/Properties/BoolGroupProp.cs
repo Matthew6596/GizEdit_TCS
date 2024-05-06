@@ -48,7 +48,7 @@ public class BoolGroupProp : GizProperty
     }
     public void ReadFromHex()
     {
-        uint num = GameManager.gmInstance.FSliceInt8(GizmosReader.ReadLocation);
+        uint num = GameManager.gmInstance.FSliceInt8(GizmosReader.reader.ReadLocation);
         if (num % 2 == 1) { Values[0] = true; num -= 1; }
         if (num % 4 == 2) { Values[1] = true; num -= 2; }
         if (num % 8 == 4) { Values[2] = true; num -= 4; }
@@ -57,7 +57,7 @@ public class BoolGroupProp : GizProperty
         if (num % 64 == 32) { Values[5] = true; num -= 32; }
         if (num % 128 == 64) { Values[6] = true; num -= 64; }
         if (num == 128) { Values[7] = true;}
-        GizmosReader.ReadLocation += 1;
+        GizmosReader.reader.ReadLocation += 1;
     }
     public GameObject[] EditorInstances { get; set; }
 

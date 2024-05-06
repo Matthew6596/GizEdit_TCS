@@ -36,8 +36,8 @@ public class Vec3Prop : GizProperty
     public void ReadFromHex()
     {
         GameManager gm = GameManager.gmInstance;
-        SetValue(new Vector3(gm.FSliceFloat32(GizmosReader.ReadLocation), gm.FSliceFloat32(GizmosReader.ReadLocation+4), gm.FSliceFloat32(GizmosReader.ReadLocation+8)));
-        GizmosReader.ReadLocation += 12;
+        SetValue(new Vector3(gm.FSliceFloat32(GizmosReader.reader.ReadLocation), gm.FSliceFloat32(GizmosReader.reader.ReadLocation+4), gm.FSliceFloat32(GizmosReader.reader.ReadLocation+8)));
+        GizmosReader.reader.ReadLocation += 12;
     }
     public GameObject EditorInstance { get; set; }
     public TMP_InputField[] Inputs { get; set; }

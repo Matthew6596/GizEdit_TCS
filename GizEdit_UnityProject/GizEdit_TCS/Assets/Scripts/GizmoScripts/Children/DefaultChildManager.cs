@@ -11,7 +11,7 @@ public class DefaultChildManager : MonoBehaviour
         defaultChildrenGizmos = new();
         for (int i = 17; i < 21; i++) {
             GameObject obj = new();
-            defaultChildrenGizmos.Add(GizmosReader.CreateGizmo(i, obj));
+            defaultChildrenGizmos.Add(GizmosReader.instance.CreateGizmo(i, obj));
         }
     }
 }

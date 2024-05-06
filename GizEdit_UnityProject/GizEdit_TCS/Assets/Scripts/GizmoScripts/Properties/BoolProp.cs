@@ -38,8 +38,8 @@ public class BoolProp : GizProperty
     }
     public void ReadFromHex()
     {
-        SetValue(GameManager.gmInstance.fhex.Substring(GizmosReader.B(GizmosReader.ReadLocation),3)!="00 ");
-        GizmosReader.ReadLocation += 1;
+        SetValue(GameManager.gmInstance.fhex.Substring(GizmosReader.B(GizmosReader.reader.ReadLocation),3)!="00 ");
+        GizmosReader.reader.ReadLocation += 1;
     }
     public GameObject EditorInstance { get; set; }
     public Toggle Input { get; set; }

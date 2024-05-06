@@ -35,8 +35,8 @@ public class AngleProp : GizProperty
     }
     public void ReadFromHex()
     {
-        SetValue(TypeConverter.Int16AngleToFloat(GameManager.gmInstance.FSliceInt16(GizmosReader.ReadLocation)));
-        GizmosReader.ReadLocation += 2;
+        SetValue(TypeConverter.Int16AngleToFloat(GameManager.gmInstance.FSliceInt16(GizmosReader.reader.ReadLocation)));
+        GizmosReader.reader.ReadLocation += 2;
     }
     public GameObject EditorInstance { get; set; }
     public TMP_InputField Input { get; set; }

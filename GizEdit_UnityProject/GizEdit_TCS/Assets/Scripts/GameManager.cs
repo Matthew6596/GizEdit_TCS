@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
     public GameObject propertyPanel;
     public Transform propertyPanelContent;
 
-    public GameObject popupPrefab;
+    public GameObject defaultPopup;
 
     //PRIVATE VARS
     enum DType { Int8, Int16, Int32, Float32, String };

@@ -36,9 +36,9 @@ public class VarStringProp : GizProperty
     }
     public void ReadFromHex()
     {
-        uint length = GameManager.gmInstance.FSliceInt8(GizmosReader.ReadLocation);
-        SetValue(GameManager.gmInstance.FSliceString(GizmosReader.ReadLocation+1,length));
-        GizmosReader.ReadLocation += length+1;
+        uint length = GameManager.gmInstance.FSliceInt8(GizmosReader.reader.ReadLocation);
+        SetValue(GameManager.gmInstance.FSliceString(GizmosReader.reader.ReadLocation+1,length));
+        GizmosReader.reader.ReadLocation += length+1;
     }
     public GameObject EditorInstance { get; set; }
     public TMP_InputField Input { get; set; }
