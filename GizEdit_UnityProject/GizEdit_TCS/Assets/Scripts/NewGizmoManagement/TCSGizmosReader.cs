@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class TCSGizmosReader : IGizmosReader
@@ -110,7 +111,7 @@ public class TCSGizmosReader : IGizmosReader
             //Obstacle
             case 0: return g;
             //Buildit
-            case 1: return g;
+            case 1: return obj.AddComponent<GizBuildit>();
             //Force
             case 2: return obj.AddComponent<GizForce>();
             //Blowup
@@ -144,7 +145,7 @@ public class TCSGizmosReader : IGizmosReader
             //ObstacleChild
             case 17: return g;
             //BuilditChild
-            case 18: return g;
+            case 18: return obj.AddComponent<GizBuilditChild>();
             //ForceChild
             case 19: return obj.AddComponent<GizForceChild>();
             //BlowupChild

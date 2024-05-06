@@ -2,54 +2,46 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GizBuildit : MonoBehaviour
+public class GizBuildit : BaseGizmo
 {
-    //PROPERTIES
-    [Header("Force Properties")]
-    public string referenceName = "buildit0";
-    //pos
-    public List<GameObject> childrenList = new();
-    public float jumpPow = 1;
-    public uint minStudValue = 0;
-    public uint maxStudValue = 0;
-    public string unknown1 = "01 64 ";
-    public string unknown2 = "00 00 00 00 00 ";
-    public float studPitch = 0;
-    public float studYaw = 0;
-    public Vector3 studSpawnPosition = Vector3.zero;
-    public float studSpeed = 1.75f;
-    public string unknown3 = "00 00 00 00 00 ";
-
-    [Header("Other")]
-    public Mesh[] typeMeshes;
-    public Material[] typeMaterials;
-    MeshRenderer mrender;
-    MeshFilter mfilter;
-    MeshCollider mcollider;
-
-    public int selectedChild = 0;
-
-    public static string[] endStateNames = { };
-
-
-    // Start is called before the first frame update
-    void Start()
+    public GizBuildit()
     {
-        StartCoroutine(FindParent());
-        tag = "objectGiz";
-        mrender = gameObject.AddComponent<MeshRenderer>();
-        mfilter = gameObject.AddComponent<MeshFilter>();
-        mcollider = gameObject.AddComponent<MeshCollider>();
+        GizProperties = new GizProperty[]{
+            new StringProp("Name", "buildit0",16),
+            new Vec3Prop("Position",Vector3.zero),
+            new ChildListProp("Buildit Children",0,DefaultChildManager.defaultChildrenGizmos[1]),
+            new Float32Prop("Jump Intensity",1),
+            new Int16Prop("Min Stud Value",0),
+            new Int16Prop("Max Stud Value",0),
+            new HexProp("Unknown 1","01 64 "),
+            new HexProp("Unknown 2","00 00 00 00 00 "),
+            new Float32Prop("Stud Pitch",0),
+            new Float32Prop("Stud Yaw",0),
+            new Vec3Prop("Stud Spawn Pos",Vector3.zero),
+            new Float32Prop("Stud Speed",1.75f),
+            new HexProp("Unknown 3","00 00 00 00 00 "),
+        };
+    }
+    override public string parentName { get => "buildits"; }
+    override public void CheckValues()
+    {
+        //Visual stuff
         mfilter.mesh = setMesh();
         mcollider.sharedMesh = mfilter.mesh;
-    }
-
-    IEnumerator FindParent()
-    {
-        yield return null;
-        Transform p = GameObject.Find("buildits").transform;
-        transform.parent = p;
         mrender.material = setMaterial();
+
+        //Children list
+        ChildListProp childList = (ChildListProp)GizProperties[2];
+        if (childList.Children != null && childList.Children.Count > 0)
+            foreach (BaseGizmo child in childList.Children)
+            {
+                child.CheckValues();
+            }
+
+        //Name & position
+        name = GizProperties[0].GetValueString();
+        if (name == "") name = "UnnamedBuildit";
+        transform.position = TypeConverter.ParseVec3(GizProperties[1].GetValueString());
     }
 
     Mesh setMesh()
@@ -60,7 +52,6 @@ public class GizBuildit : MonoBehaviour
     Material setMaterial()
     {
         return transform.parent.GetComponent<MeshRenderer>().material;
-        //int m = pickupTypes.IndexOf(pickupType);
-        //return transform.parent.GetComponent<MeshRenderer>().materials[m];
     }
+    public override string GetGizType() { return "GizBuildit"; }
 }
