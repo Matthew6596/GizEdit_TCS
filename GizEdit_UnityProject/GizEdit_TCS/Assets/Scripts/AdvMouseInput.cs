@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 public class AdvMouseInput : MonoBehaviour
 {
     public static AdvMouseInput instance;
-    public Vector3 MoveGizPosition { get=>moveGiz.position; }
+    public static Vector3 GetMoveGizPos() { return instance.moveGiz.position; }
 
     public Vector3 worldPos;
     public float planeOffset;
@@ -102,9 +102,27 @@ public class AdvMouseInput : MonoBehaviour
                 GameObject hitObj = hit.transform.gameObject;
                 if (hitObj.CompareTag("editorGiz"))
                 {
+                    //Get giz axis
                     moveGizAxis = hitObj.name[(hitObj.name.IndexOf("move") + 4)..];
+
+                    //Set plane and get world position
+                    plane.SetNormalAndPosition(getPlaneAxis(moveGizAxis), moveGiz.position);
+                    float distance;
+                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                    if (plane.Raycast(ray, out distance))
+                    {
+                        worldPos = ray.GetPoint(distance);
+                    }
+                    //Offset Children
+                    moveGiz.GetChild(0).localPosition = 10*MultiplyVec3s(moveGiz.position-worldPos, axisLock);
                 }
             }
+        }
+        else
+        {
+            //Reset children offset
+            moveGiz.position = moveGiz.GetChild(0).position;
+            moveGiz.GetChild(0).localPosition = Vector3.zero;
         }
     }
 
@@ -115,11 +133,13 @@ public class AdvMouseInput : MonoBehaviour
         if (xAng > 180) xAng -= 360;
         if (yAng > 180) yAng -= 360;
 
+        Debug.Log(GetClosestPlaneAngle(xAng, yAng));
+
         switch (axis)
         {
             case ("X"):
                 axisLock = Vector3.right;
-                if (xAng >= 45 || xAng <= -45) return Vector3.up;
+                if (xAng >= 45 || xAng <= -45) return Vector3.up; //<<Need better calculation for which plane works best
                 return Vector3.forward;
             case ("Y"):
                 axisLock = Vector3.up;
@@ -142,6 +162,38 @@ public class AdvMouseInput : MonoBehaviour
                 axisLock = Vector3.zero;
                 return Vector3.up;
         }
+    }
+    public Vector3 PlaneAngleCloseness(float xAng, float yAng) //Vec3: updown, leftright, forwardback
+    {
+        Vector3 closeness = new();
+
+        if(xAng>=0)closeness.x = 90-xAng; //updown
+        else closeness.x = 90+xAng;
+
+        if(yAng > 0) //right
+            closeness.y = 90 - yAng;
+        else if (yAng < 0) //left
+            closeness.y = 90+ yAng;
+
+        if (closeness.y > 0) //check front for z
+            closeness.z = yAng;
+        else //check back for z
+        {
+            if (yAng >= 0) closeness.z = yAng-180;
+            else closeness.z = 180+yAng;
+        }
+        return closeness;
+    }
+    public string GetClosestPlaneAngle(float xAng, float yAng)
+    {
+        Vector3 c = PlaneAngleCloseness(xAng, yAng);
+        for (int i = 0; i < 3; i++) c[i] = Mathf.Abs(c[i]);
+
+        if ((xAng >= 45 || xAng <= -45) || (c.x <= c.y && c.x <= c.z)) return "X"; //updown gets special priority
+        if (c.y <= c.x && c.y <= c.z) return "Y";
+        if (c.z <= c.y && c.z <= c.x) return "Z";
+
+        return null;
     }
 
     public static Vector3 MultiplyVec3s(Vector3 vec1, Vector3 vec2)
