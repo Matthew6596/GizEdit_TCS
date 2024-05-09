@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 public class AdvMouseInput : MonoBehaviour
 {
     public static AdvMouseInput instance;
+    public Vector3 MoveGizPosition { get=>moveGiz.position; }
 
     public Vector3 worldPos;
     public float planeOffset;
@@ -17,6 +18,11 @@ public class AdvMouseInput : MonoBehaviour
     //Editor stuff
     bool mouseDown = false;
     public Transform moveGiz;
+
+    Vector3 axisLock = Vector3.one;
+    string moveGizAxis;
+
+    GameObject prevHitObj;
 
     private void Start()
     {
@@ -29,8 +35,10 @@ public class AdvMouseInput : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        EditorGizOutlineGlow();
+
         //plane = new Plane(getPlaneAxis(), planeOffset);
-        plane.SetNormalAndPosition(getPlaneAxis(),moveGiz.position);
+        plane.SetNormalAndPosition(getPlaneAxis(moveGizAxis),moveGiz.position);
 
         float distance;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -41,11 +49,18 @@ public class AdvMouseInput : MonoBehaviour
 
         if (mouseDown)
         {
-            moveGiz.position = worldPos;
+            Vector3 moveOffset = MultiplyVec3s(worldPos, axisLock);
+            Vector3 moveGizPos = moveGiz.position;
+
+            if (moveOffset.x != 0) moveGizPos.x = moveOffset.x;
+            if (moveOffset.y != 0) moveGizPos.y = moveOffset.y;
+            if (moveOffset.z != 0) moveGizPos.z = moveOffset.z;
+
+            moveGiz.position = moveGizPos;
         }
     }
 
-    Vector3 getPlaneAxis()
+    /*Vector3 getPlaneAxis()
     {
         float xAng = camTransform.localEulerAngles.x;
         float yAng = playerTransform.localEulerAngles.y; //between -180 to 180
@@ -60,7 +75,7 @@ public class AdvMouseInput : MonoBehaviour
         if(yAng >-135 && yAng<-45) return Vector3.right; //facing left
 
         return Vector3.forward; //facing backwards
-    }
+    }*/
 
     private void OnDrawGizmos()
     {
@@ -79,5 +94,80 @@ public class AdvMouseInput : MonoBehaviour
     public void MouseDown(InputAction.CallbackContext ctx)
     {
         mouseDown = ctx.performed;
+        if (mouseDown)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit))
+            {
+                GameObject hitObj = hit.transform.gameObject;
+                if (hitObj.CompareTag("editorGiz"))
+                {
+                    moveGizAxis = hitObj.name[(hitObj.name.IndexOf("move") + 4)..];
+                }
+            }
+        }
+    }
+
+    Vector3 getPlaneAxis(string axis)
+    {
+        float xAng = camTransform.localEulerAngles.x;
+        float yAng = playerTransform.localEulerAngles.y; //between -180 to 180
+        if (xAng > 180) xAng -= 360;
+        if (yAng > 180) yAng -= 360;
+
+        switch (axis)
+        {
+            case ("X"):
+                axisLock = Vector3.right;
+                if (xAng >= 45 || xAng <= -45) return Vector3.up;
+                return Vector3.forward;
+            case ("Y"):
+                axisLock = Vector3.up;
+                if ((yAng > 45 && yAng < 135) || (yAng > -135 && yAng < -45)) return Vector3.right;
+                return Vector3.forward;
+            case ("Z"):
+                axisLock = Vector3.forward;
+                if (xAng >= 45 || xAng <= -45) return Vector3.up;
+                return Vector3.right;
+            case ("XZ"):
+                axisLock = Vector3.one;
+                return Vector3.up;
+            case ("XY"):
+                axisLock = Vector3.one;
+                return Vector3.forward;
+            case ("ZY"):
+                axisLock = Vector3.one;
+                return Vector3.right;
+            default: 
+                axisLock = Vector3.zero;
+                return Vector3.up;
+        }
+    }
+
+    public static Vector3 MultiplyVec3s(Vector3 vec1, Vector3 vec2)
+    {
+        return new Vector3(vec1.x * vec2.x, vec1.y * vec2.y, vec1.z * vec2.z);
+    }
+
+    public void EditorGizOutlineGlow()
+    {
+        if (prevHitObj != null)
+        {
+            //Turn off prevHitObj glow
+            prevHitObj.GetComponent<Renderer>().materials[1].SetFloat("_Size",0);
+            prevHitObj = null;
+        }
+
+        RaycastHit hit;
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit))
+        {
+            GameObject hitObj = hit.transform.gameObject;
+            if (hitObj.CompareTag("editorGiz"))
+            {
+                //Make hitObj glow
+                hitObj.GetComponent<Renderer>().materials[1].SetFloat("_Size", 1.1f);
+                prevHitObj = hitObj;
+            }
+        }
     }
 }
