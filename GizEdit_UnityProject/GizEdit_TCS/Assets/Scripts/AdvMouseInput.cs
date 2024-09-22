@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 public class AdvMouseInput : MonoBehaviour
 {
     public static AdvMouseInput instance;
-    public static Vector3 GetMoveGizPos() { return instance.moveGiz.position; }
+    public static Vector3 GetMoveGizPos() { return instance.moveGiz.GetChild(0).position; }
 
     public Vector3 worldPos;
     public float planeOffset;
