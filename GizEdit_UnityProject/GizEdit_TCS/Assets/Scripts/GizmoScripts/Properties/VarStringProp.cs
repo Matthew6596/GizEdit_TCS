@@ -7,42 +7,30 @@ using UnityEngine.UIElements;
 
 public class VarStringProp : GizProperty
 {
-    public string Name { get; set; }
-    public string Value { get; set; }
     public VarStringProp(string name, string defaultValue)
     {
         Set(name, defaultValue);
-    }
-    public void SetValue(string value)
-    {
-        Value = value;
     }
     public void Set(string name, string value)
     {
         Name = name;
         Value = value;
     }
-    //Unused SetValues
-    public void SetValue(bool value) { }
-    public void SetValue(bool[] value) { }
-    public void SetValue(int value) { }
-    public void SetValue(uint value) { }
-    public void SetValue(float value) { }
-    public void SetValue(Vector3 value) { }
-    //
-    public string ConvertToHex()
+    public override byte[] ToBin()
     {
-        return TypeConverter.VarStringToHex(Value);
+        string str = (string)Value;
+        byte[] b = new byte[str.Length+2];
+        b[0] = (byte)str.Length;
+        for (int i = 1; i < str.Length+1; i++) b[i] = (byte)str[i];
+        b[str.Length - 1] = 0;
+        return b;
     }
-    public void ReadFromHex()
+    public override void FromBin()
     {
-        uint length = GameManager.gmInstance.FSliceInt8(GizmosReader.reader.ReadLocation);
-        SetValue(GameManager.gmInstance.FSliceString(GizmosReader.reader.ReadLocation+1,length));
-        GizmosReader.reader.ReadLocation += length+1;
+        SetValue(GameManager.ReadString());
     }
-    public GameObject EditorInstance { get; set; }
     public TMP_InputField Input { get; set; }
-    public void UpdateValue()
+    public override void UpdateValue()
     {
         if (Input.text.Length > 254)
         {
@@ -54,16 +42,12 @@ public class VarStringProp : GizProperty
             SetValue(Input.text);
         }
     }
-    public void DeleteInEditor()
-    {
-        GameObject.Destroy(EditorInstance);
-    }
-    public void CreateInEditor(Transform contentArea=null)
+    public override void CreateInEditor(Transform contentArea=null)
     {
         if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
         EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[5], contentArea);
         Input = EditorInstance.transform.GetChild(1).GetComponent<TMP_InputField>();
-        Input.text = Value;
+        Input.text = (string)Value;
         Input.characterLimit = 254;
         EditorInstance.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = Name;
         //Set up event listeners
@@ -72,9 +56,5 @@ public class VarStringProp : GizProperty
             UpdateValue();
             EditorManager.instance.CheckValues();
         });
-    }
-    public string GetValueString()
-    {
-        return Value.ToString();
     }
 }

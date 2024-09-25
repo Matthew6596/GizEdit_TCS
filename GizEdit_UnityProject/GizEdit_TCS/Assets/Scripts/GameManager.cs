@@ -27,9 +27,9 @@ public class GameManager : MonoBehaviour
 
     //PUBLIC VARS
     [NonSerialized]
-    public string fhex="";
-    [NonSerialized]
     public GameObject player;
+    [NonSerialized]
+    public byte[] bytes;
 
     //CHANGE FOR MAC / LINUX
     public IStandaloneFileBrowser FileBrowser = new StandaloneFileBrowserWindows();
@@ -49,23 +49,52 @@ public class GameManager : MonoBehaviour
         player = GameObject.Find("Player");
     }
 
-    //basically substring, shorter to type in FileParser
-    public uint FSliceInt8(int start){return TypeConverter.HexToInt8(fhex.Substring(B(start), B(1)));}
-    public uint FSliceInt16(int start){return TypeConverter.HexToInt16(fhex.Substring(B(start), B(2)));}
-    public uint FSliceInt32(int start){return TypeConverter.HexToInt32(fhex.Substring(B(start), B(4)));}
-    public float FSliceFloat32(int start){return TypeConverter.HexToFloat32(fhex.Substring(B(start), B(4)));}
-    public string FSliceString(int start, int length){return TypeConverter.HexToString(fhex.Substring(B(start), B(length)));}
-    public uint FSliceInt8(uint start) { return TypeConverter.HexToInt8(fhex.Substring(B((int)start), B(1))); }
-    public uint FSliceInt16(uint start) { return TypeConverter.HexToInt16(fhex.Substring(B((int)start), B(2))); }
-    public uint FSliceInt32(uint start) { return TypeConverter.HexToInt32(fhex.Substring(B((int)start), B(4))); }
-    public float FSliceFloat32(uint start) { return TypeConverter.HexToFloat32(fhex.Substring(B((int)start), B(4))); }
-    public string FSliceString(uint start, int length) { return TypeConverter.HexToString(fhex.Substring(B((int)start), B(length))); }
-    public string FSliceString(int start, uint length) { return TypeConverter.HexToString(fhex.Substring(B(start), B((int)length))); }
-    public string FSliceString(uint start, uint length) { return TypeConverter.HexToString(fhex.Substring(B((int)start), B((int)length))); }
 
-    static int B(int _bytes)
+    //NEW FILE READ METHODS
+    public static byte ReadInt8() { GizmosReader.reader.ReadLocation++; return gmInstance.bytes[GizmosReader.reader.ReadLocation - 1]; }
+    public static short ReadInt16() 
+    { 
+        GizmosReader.reader.ReadLocation += 2; 
+        return BitConverter.ToInt16(gmInstance.bytes, GizmosReader.reader.ReadLocation - 2); 
+    }
+    public static int ReadInt32() 
+    { 
+        GizmosReader.reader.ReadLocation += 4; 
+        return BitConverter.ToInt32(gmInstance.bytes, GizmosReader.reader.ReadLocation - 4);
+    }
+    public static float ReadFloat() 
+    { 
+        GizmosReader.reader.ReadLocation += 4; 
+        return BitConverter.ToSingle(gmInstance.bytes, GizmosReader.reader.ReadLocation - 4); 
+    }
+    public static string ReadString()
     {
-        return (_bytes * 3);
+        byte len = gmInstance.bytes[GizmosReader.reader.ReadLocation]; GizmosReader.reader.ReadLocation++;
+        string ret = "";
+        for(int i=0; i<len; i++)
+        {
+            ret += (char)gmInstance.bytes[GizmosReader.reader.ReadLocation];
+            GizmosReader.reader.ReadLocation++;
+        }
+        return ret;
+    }
+    public static string ReadFixedString(int len)
+    {
+        string ret = "";
+        for (int i = 0; i < len; i++)
+        {
+            ret += (char)gmInstance.bytes[GizmosReader.reader.ReadLocation];
+            GizmosReader.reader.ReadLocation++;
+        }
+        return ret;
+    }
+    public static Vector3 ReadVec3() { return new(ReadFloat(), ReadFloat(), ReadFloat()); }
+    public static byte[] ReadSlice(int len)
+    {
+        List<byte> ret = new();
+        for (int i = 0; i < len; i++, GizmosReader.reader.ReadLocation++)
+            ret.Add(gmInstance.bytes[GizmosReader.reader.ReadLocation]);
+        return ret.ToArray();
     }
 
     public void DelayAction(Action action, float secs=0)

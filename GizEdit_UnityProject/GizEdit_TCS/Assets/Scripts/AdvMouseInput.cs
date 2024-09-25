@@ -57,6 +57,7 @@ public class AdvMouseInput : MonoBehaviour
             if (moveOffset.z != 0) moveGizPos.z = moveOffset.z;
 
             moveGiz.position = moveGizPos;
+            if(EditorManager.instance!=null)EditorManager.instance.UpdateSelectedPos();
         }
     }
 
@@ -120,6 +121,7 @@ public class AdvMouseInput : MonoBehaviour
         }
         else
         {
+            moveGizAxis = "";
             //Reset children offset
             moveGiz.position = moveGiz.GetChild(0).position;
             moveGiz.GetChild(0).localPosition = Vector3.zero;
@@ -133,7 +135,7 @@ public class AdvMouseInput : MonoBehaviour
         if (xAng > 180) xAng -= 360;
         if (yAng > 180) yAng -= 360;
 
-        Debug.Log(GetClosestPlaneAngle(xAng, yAng));
+        //Debug.Log(GetClosestPlaneAngle(xAng, yAng));
 
         switch (axis)
         {

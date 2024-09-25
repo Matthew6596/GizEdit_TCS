@@ -10,35 +10,23 @@ abstract public class BaseGizmo : MonoBehaviour
     public MeshFilter mfilter;
     public MeshCollider mcollider;
     abstract public void CheckValues();
-    public string ConvertToHex()
+    public byte[] ToBin()
     {
-        string ret="";
-        foreach(GizProperty prop in GizProperties)
-        {
-            ret+=prop.ConvertToHex();
-        }
-        return ret;
+        List<byte> bytes = new();
+        foreach(GizProperty prop in GizProperties) bytes.AddRange(prop.ToBin());
+        return bytes.ToArray();
     }
-    public void ReadFromHex()
+    public void FromBin()
     {
-        foreach (GizProperty prop in GizProperties)
-        {
-            prop.ReadFromHex();
-        }
+        foreach (GizProperty prop in GizProperties) prop.FromBin();
     }
     public void CreateInEditor()
     {
-        foreach (GizProperty prop in GizProperties)
-        {
-            prop.CreateInEditor(GameManager.gmInstance.propertyPanelContent);
-        }
+        foreach (GizProperty prop in GizProperties) prop.CreateInEditor(GameManager.gmInstance.propertyPanelContent);
     }
     public void DestroyInEditor()
     {
-        foreach (GizProperty prop in GizProperties)
-        {
-            prop.DeleteInEditor();
-        }
+        foreach (GizProperty prop in GizProperties) prop.DeleteInEditor();
     }
     public void Start()
     {

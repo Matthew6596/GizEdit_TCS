@@ -8,22 +8,21 @@ using UnityEngine;
   String, VarString, Int8, Int16, Int32, Float32, Vec3, Angle, Bool, ChildList, Enum, Hex, BoolGroup
 };*/
 
-public interface GizProperty
+public abstract class GizProperty
 {
+    public object Value { get; set; }
     public string Name { get; set; }
-    //Overloaded sets
-    public void SetValue(bool value);
-    public void SetValue(bool[] value);
-    public void SetValue(int value);
-    public void SetValue(uint value);
-    public void SetValue(float value);
-    public void SetValue(string value);
-    public void SetValue(Vector3 value);
-    public string GetValueString();
-    public void UpdateValue();
-    public string ConvertToHex();
-    public void ReadFromHex();
-    public void DeleteInEditor();
-    public void CreateInEditor(Transform contentArea);
+
+    //Methods
+    public void SetValue(object value) { Value = value; }
+    public T GetValue<T>() { return (T)Convert.ChangeType(Value,typeof(T)); }
+    public abstract void UpdateValue();
+    public abstract byte[] ToBin();
+    public abstract void FromBin();
+
+    //Editor stuff
+    public GameObject EditorInstance { get; set; }
+    public void DeleteInEditor() { GameObject.Destroy(EditorInstance); }
+    public abstract void CreateInEditor(Transform contentArea);
 
 }

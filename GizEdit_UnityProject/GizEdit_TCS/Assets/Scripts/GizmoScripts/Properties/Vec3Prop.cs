@@ -6,42 +6,30 @@ using UnityEngine;
 
 public class Vec3Prop : GizProperty
 {
-    public string Name { get; set; }
-    public Vector3 Value { get; set; }
     public Vec3Prop(string name, Vector3 defaultValue)
     {
         Set(name, defaultValue);
-    }
-    public void SetValue(Vector3 value)
-    {
-        Value = value;
     }
     public void Set(string name, Vector3 value)
     {
         Name = name;
         Value = value;
     }
-    //Unused SetValues
-    public void SetValue(bool value) { }
-    public void SetValue(bool[] value) { }
-    public void SetValue(int value) { }
-    public void SetValue(uint value) { }
-    public void SetValue(float value) { }
-    public void SetValue(string value) { }
-    //
-    public string ConvertToHex()
+    public override byte[] ToBin()
     {
-        return TypeConverter.Float32ToHex(Value.x)+ TypeConverter.Float32ToHex(Value.y)+ TypeConverter.Float32ToHex(Value.z);
+        Vector3 val = (Vector3)Value;
+        List<byte> ret = new();
+        ret.AddRange(BitConverter.GetBytes(val.x));
+        ret.AddRange(BitConverter.GetBytes(val.y));
+        ret.AddRange(BitConverter.GetBytes(val.z));
+        return ret.ToArray();
     }
-    public void ReadFromHex()
+    public override void FromBin()
     {
-        GameManager gm = GameManager.gmInstance;
-        SetValue(new Vector3(gm.FSliceFloat32(GizmosReader.reader.ReadLocation), gm.FSliceFloat32(GizmosReader.reader.ReadLocation+4), gm.FSliceFloat32(GizmosReader.reader.ReadLocation+8)));
-        GizmosReader.reader.ReadLocation += 12;
+        SetValue(GameManager.ReadVec3());
     }
-    public GameObject EditorInstance { get; set; }
     public TMP_InputField[] Inputs { get; set; }
-    public void UpdateValue()
+    public override void UpdateValue()
     {
         Vector3 val=new();
         bool[] passed=new bool[] {false,false,false};
@@ -77,11 +65,7 @@ public class Vec3Prop : GizProperty
         }
         if (passed[0] && passed[1] && passed[2]) SetValue(val);
     }
-    public void DeleteInEditor()
-    {
-        GameObject.Destroy(EditorInstance);
-    }
-    public void CreateInEditor(Transform contentArea=null)
+    public override void CreateInEditor(Transform contentArea=null)
     {
         if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
         EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[6], contentArea);
@@ -89,9 +73,10 @@ public class Vec3Prop : GizProperty
         Inputs[0] = EditorInstance.transform.GetChild(1).gameObject.GetComponent<TMP_InputField>();
         Inputs[1] = EditorInstance.transform.GetChild(2).gameObject.GetComponent<TMP_InputField>();
         Inputs[2] = EditorInstance.transform.GetChild(3).gameObject.GetComponent<TMP_InputField>();
-        Inputs[0].text = Value.x.ToString();
-        Inputs[1].text = Value.y.ToString();
-        Inputs[2].text = Value.z.ToString();
+        Vector3 val = (Vector3)Value;
+        Inputs[0].text = val.x.ToString();
+        Inputs[1].text = val.y.ToString();
+        Inputs[2].text = val.z.ToString();
         EditorInstance.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = Name;
         //Set up event listeners
         Inputs[0].onValueChanged.AddListener((string val) =>
@@ -109,9 +94,5 @@ public class Vec3Prop : GizProperty
             UpdateValue();
             EditorManager.instance.CheckValues();
         });
-    }
-    public string GetValueString()
-    {
-        return Value.ToString();
     }
 }

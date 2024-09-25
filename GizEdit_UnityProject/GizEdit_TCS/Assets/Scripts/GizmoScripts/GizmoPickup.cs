@@ -9,29 +9,29 @@ public class GizmoPickup : BaseGizmo
         GizProperties = new GizProperty[]{
             new StringProp("Name", "",8),
             new Vec3Prop("Position",Vector3.zero),
-            new EnumProp("Type",0,pickupTypeNames,pickupTypeHex),
-            new BoolProp("Triggered Spawn",false,"02 "),
+            new EnumProp("Type",0,pickupTypeNames,pickupTypeBytes),
+            new BoolProp("Triggered Spawn",false,2),
             new Int8Prop("Spawn Group",0)
         };
     }
-    override public string parentName { get=>"pickups";}
+    override public string parentName =>"pickups";
     override public void CheckValues()
     {
         mfilter.mesh = setMesh();
         mcollider.sharedMesh = mfilter.mesh;
         mrender.material = setMaterial();
-        name = GizProperties[0].GetValueString();
+        name = GizProperties[0].GetValue<string>();
         if (name == "") name = "UnnamedPickup";
-        transform.position = TypeConverter.ParseVec3(GizProperties[1].GetValueString());
+        transform.position = GizProperties[1].GetValue<Vector3>();
     }
 
     static public string pickupTypes = "sgbpmcuhrt"; //736762706d6375687274
     static public string[] pickupTypeNames = { "Silver Stud", "Gold Stud", "Blue Stud", "Purple Stud",
         "Minikit", "Challenge Minikit", "Power Up", "Heart", "Red Brick", "Torpedo" };
-    static public string[] pickupTypeHex = { "73 ", "67 ", "62 ", "70 ","6D ", "63 ", "75 ", "68 ", "72 ", "74 " };
+    static public byte[] pickupTypeBytes = { 0x73, 0x67, 0x62, 0x70,0x6D, 0x63,0x75, 0x68, 0x72, 0x74 };
     Mesh setMesh()
     {
-        int m = int.Parse(GizProperties[2].GetValueString());
+        int m = GizProperties[2].GetValue<int>();
         if (m < 4) return GizmoMeshes.CubeMesh(Vector3.one * 0.1f); //studs
         else if (m < 6) return GizmoMeshes.CubeMesh(new Vector3(1.15f, 1.85f, 1.15f) * 0.2f); //kits
         else if (m == 6) return GizmoMeshes.CubeMesh(Vector3.one * 0.25f); //powerup
@@ -42,7 +42,7 @@ public class GizmoPickup : BaseGizmo
     }
     Material setMaterial()
     {
-        int m = int.Parse(GizProperties[2].GetValueString());
+        int m = GizProperties[2].GetValue<int>();
         return transform.parent.GetComponent<MeshRenderer>().materials[m];
     }
 

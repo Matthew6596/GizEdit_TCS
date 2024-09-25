@@ -1,23 +1,23 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class TCSGizmosReader : IGizmosReader
 {
 
     public bool[] sectionReady { get; set; }
-    public string[] headerData { get; set; }
+    public byte[][] headerData { get; set; }
     public int[] headerLengths { get; set; }
-    public uint ReadLocation { get; set; }
+    public int ReadLocation { get; set; }
 
     public GameManager gm;
 
     public TCSGizmosReader()
     {
         gm = GameManager.gmInstance;
-        sectionReady = new bool[]{false,false,true, false, true, false, false, false, false, false, false, false, false, false, false, false, false};
-        headerData = new string[17];
+        sectionReady = new bool[]{false,false,false, false, true, false, false, false, false, false, false, false, false, false, false, false, false};
+        headerData = new byte[17][];
     }
 
     public IEnumerator ReadGizmos()
@@ -27,8 +27,9 @@ public class TCSGizmosReader : IGizmosReader
         for (int i = 0; i < 17; i++)
         {
             yield return null;
-            ReadLocation += gm.FSliceInt32(ReadLocation) + 4; //skip header name
-            uint sectionLength = gm.FSliceInt32(ReadLocation); ReadLocation += 4;
+            int headLen = GameManager.ReadInt32();
+            ReadLocation += headLen; //skip header name
+            int sectionLength = GameManager.ReadInt32();
             if (sectionReady[i])
             {
                 ReadGizmoSection(i);
@@ -41,40 +42,40 @@ public class TCSGizmosReader : IGizmosReader
     }
     void ReadGizmoSection(int readSection)
     {
-        uint numGizs = ReadExtraHeaderStuff(readSection);
+        int numGizs = ReadExtraHeaderStuff(readSection);
         for (int i = 0; i < numGizs; i++)
         {
             GameObject obj = new();
             BaseGizmo giz = CreateGizmo(readSection, obj);
-            giz.ReadFromHex();
+            giz.FromBin();
         }
     }
-    uint ReadExtraHeaderStuff(int gizSection)
+    int ReadExtraHeaderStuff(int gizSection)
     {
-        uint n = 0;
+        int n = 0;
         switch (gizSection)
         {
             //Obstacle
             case 0: return n;
             //Buildit
             case 1:
-                n = gm.FSliceInt16(ReadLocation + 1);
-                ReadLocation += 3;
+                ReadLocation++;
+                n = GameManager.ReadInt16();
                 return n;
             //Force
             case 2:
-                uint forceH = gm.FSliceInt8(ReadLocation); ReadLocation += 1;
-                n = gm.FSliceInt16(ReadLocation); ReadLocation += 2;
+                byte forceH = GameManager.ReadInt8();
+                n = GameManager.ReadInt16();
                 if (forceH != 16) Debug.LogWarning("Update to force header reader needed: " + forceH);
                 return n;
             //Blowup
             case 3: return n;
             //Pickup
             case 4:
-                uint pickupH = gm.FSliceInt32(ReadLocation); ReadLocation += 4;
-                n = gm.FSliceInt32(ReadLocation); ReadLocation += 8;
-                if (pickupH == 7) { headerData[4] = gm.fhex.Substring((int)ReadLocation * 3, 24); ReadLocation += 8; }
-                else headerData[4] = pickupH.ToString();
+                int pickupH = GameManager.ReadInt32();
+                n = GameManager.ReadInt32(); ReadLocation += 4;
+                if (pickupH == 7) { headerData[4] = GameManager.ReadSlice(8); }
+                else headerData[4] = BitConverter.GetBytes(pickupH);
                 return n;
             //Lever
             case 5: return n;
@@ -154,28 +155,28 @@ public class TCSGizmosReader : IGizmosReader
         GameObject.Destroy(obj);
         return null;
     }
-    public string getHeader(string titleName)
+    public byte[] getHeader(string titleName) => titleName switch
     {
-        if (titleName == "GizObstacle") { return "0B 00 00 00 47 69 7A 4F 62 73 74 61 63 6C 65 "; }
-        else if (titleName == "GizBuildit") { return "0A 00 00 00 47 69 7A 42 75 69 6C 64 69 74 "; }
-        else if (titleName == "GizForce") { return "08 00 00 00 47 69 7A 46 6F 72 63 65 "; }
-        else if (titleName == "blowup") { return "06 00 00 00 62 6C 6F 77 75 70 "; }
-        else if (titleName == "GizmoPickup") { return "0B 00 00 00 47 69 7A 6D 6F 50 69 63 6B 75 70 "; }
-        else if (titleName == "Lever") { return "05 00 00 00 4C 65 76 65 72 "; }
-        else if (titleName == "Spinner") { return "07 00 00 00 53 70 69 6E 6E 65 72 "; }
-        else if (titleName == "MiniCut") { return "07 00 00 00 4D 69 6E 69 43 75 74 "; }
-        else if (titleName == "Tube") { return "04 00 00 00 54 75 62 65 "; }
-        else if (titleName == "ZipUp") { return "05 00 00 00 5A 69 70 55 70 "; }
-        else if (titleName == "GizTurret") { return "09 00 00 00 47 69 7A 54 75 72 72 65 74 "; }
-        else if (titleName == "BombGenerator") { return "0D 00 00 00 42 6F 6D 62 47 65 6E 65 72 61 74 6F 72 "; }
-        else if (titleName == "Panel") { return "05 00 00 00 50 61 6E 65 6C "; }
-        else if (titleName == "HatMachine") { return "0A 00 00 00 48 61 74 4D 61 63 68 69 6E 65 "; }
-        else if (titleName == "PushBlocks") { return "0A 00 00 00 50 75 73 68 42 6C 6F 63 6B 73 "; }
-        else if (titleName == "Torp Machine") { return "0C 00 00 00 54 6F 72 70 20 4D 61 63 68 69 6E 65 "; }
-        else if (titleName == "ShadowEditor") { return "0C 00 00 00 53 68 61 64 6F 77 45 64 69 74 6F 72 "; }
-        else if (titleName == "Grapple") { return "07 00 00 00 47 72 61 70 70 6C 65 "; }
-        else if (titleName == "Plug") { return "04 00 00 00 50 6C 75 67 "; }
-        else if (titleName == "Techno") { return "06 00 00 00 54 65 63 68 6E 6F "; }
-        else { return ""; }
-    }
+        "GizObstacle" => new byte[] { 0x0B, 0x00, 0x00, 0x00, 0x47, 0x69, 0x7A, 0x4F, 0x62, 0x73, 0x74, 0x61, 0x63, 0x6C, 0x65 },
+        "GizBuildit" => new byte[] { 0x0A, 0x00, 0x00, 0x00, 0x47, 0x69, 0x7A, 0x42, 0x75, 0x69, 0x6C, 0x64, 0x69, 0x74 },
+        "GizForce" => new byte[] { 0x08, 0x00, 0x00, 0x00, 0x47, 0x69, 0x7A, 0x46, 0x6F, 0x72, 0x63, 0x65 },
+        "blowup" => new byte[] { 0x06, 0x00, 0x00, 0x00, 0x62, 0x6C, 0x6F, 0x77, 0x75, 0x70 },
+        "GizmoPickup" => new byte[] { 0x0B, 0x00, 0x00, 0x00, 0x47, 0x69, 0x7A, 0x6D, 0x6F, 0x50, 0x69, 0x63, 0x6B, 0x75, 0x70 },
+        "Lever" => new byte[] { 0x05, 0x00, 0x00, 0x00, 0x4C, 0x65, 0x76, 0x65, 0x72 },
+        "Spinner" => new byte[] { 0x07, 0x00, 0x00, 0x00, 0x53, 0x70, 0x69, 0x6E, 0x6E, 0x65, 0x72 },
+        "MiniCut" => new byte[] { 0x07, 0x00, 0x00, 0x00, 0x4D, 0x69, 0x6E, 0x69, 0x43, 0x75, 0x74 },
+        "Tube" => new byte[] { 0x04, 0x00, 0x00, 0x00, 0x54, 0x75, 0x62, 0x65 },
+        "ZipUp" => new byte[] { 0x05, 0x00, 0x00, 0x00, 0x5A, 0x69, 0x70, 0x55, 0x70 },
+        "GizTurret" => new byte[] { 0x09, 0x00, 0x00, 0x00, 0x47, 0x69, 0x7A, 0x54, 0x75, 0x72, 0x72, 0x65, 0x74 },
+        "BombGenerator" => new byte[] { 0x0D, 0x00, 0x00, 0x00, 0x42, 0x6F, 0x6D, 0x62, 0x47, 0x65, 0x6E, 0x65, 0x72, 0x61, 0x74, 0x6F, 0x72 },
+        "Panel" => new byte[] { 0x05, 0x00, 0x00, 0x00, 0x50, 0x61, 0x6E, 0x65, 0x6C },
+        "HatMachine" => new byte[] { 0x0A, 0x00, 0x00, 0x00, 0x48, 0x61, 0x74, 0x4D, 0x61, 0x63, 0x68, 0x69, 0x6E, 0x65 },
+        "PushBlocks" => new byte[] { 0x0A, 0x00, 0x00, 0x00, 0x50, 0x75, 0x73, 0x68, 0x42, 0x6C, 0x6F, 0x63, 0x6B, 0x73 },
+        "Torp Machine" => new byte[] { 0x0C, 0x00, 0x00, 0x00, 0x54, 0x6F, 0x72, 0x70, 0x20, 0x4D, 0x61, 0x63, 0x68, 0x69, 0x6E, 0x65 },
+        "ShadowEditor" => new byte[] { 0x0C, 0x00, 0x00, 0x00, 0x53, 0x68, 0x61, 0x64, 0x6F, 0x77, 0x45, 0x64, 0x69, 0x74, 0x6F, 0x72 },
+        "Grapple" => new byte[] { 0x07, 0x00, 0x00, 0x00, 0x47, 0x72, 0x61, 0x70, 0x70, 0x6C, 0x65 },
+        "Plug" => new byte[] { 0x04, 0x00, 0x00, 0x00, 0x50, 0x6C, 0x75, 0x67 },
+        "Techno" => new byte[] { 0x06, 0x00, 0x00, 0x00, 0x54, 0x65, 0x63, 0x68, 0x6E, 0x6F },
+        _ => new byte[] { }
+    };
 }

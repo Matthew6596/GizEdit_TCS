@@ -6,61 +6,41 @@ using UnityEngine;
 
 public class EnumProp : GizProperty
 {
-    public string Name { get; set; }
-    public int Value { get; set; }
     public string[] OptionNames { get; set; }
-    public string[] OptionHex { get; set; }
-    public EnumProp(string name, int defaultValue, string[] optionNames, string[] optionHexValues)
+    public byte[] OptionVals { get; set; }
+    public EnumProp(string name, int defaultValue, string[] optionNames, byte[] optionValues)
     {
         OptionNames = optionNames;
-        OptionHex = optionHexValues;
+        OptionVals = optionValues;
         Set(name, defaultValue);
-    }
-    public void SetValue(int value)
-    {
-        Value = value;
     }
     public void Set(string name, int value)
     {
         Name = name;
         Value = value;
     }
-    //Unused SetValues
-    public void SetValue(bool value) { }
-    public void SetValue(bool[] value) { }
-    public void SetValue(uint value) { }
-    public void SetValue(float value) { }
-    public void SetValue(string value) { }
-    public void SetValue(Vector3 value) { }
-    //
-    public string ConvertToHex()
+    public override byte[] ToBin()
     {
-        return OptionHex[Value];
+        return new byte[] { OptionVals[(int)Value] };
     }
-    public void ReadFromHex()
+    public override void FromBin()
     {
-        string val = GameManager.gmInstance.fhex.Substring(GizmosReader.B(GizmosReader.reader.ReadLocation), OptionHex[0].Length);
-        for(int i=0; i<OptionHex.Length; i++)
+        byte val = GameManager.ReadInt8();
+        for(int i=0; i< OptionVals.Length; i++)
         {
-            if (val == OptionHex[i])
+            if (val == OptionVals[i])
             {
                 SetValue(i);
                 break;
             }
         }
-        GizmosReader.reader.ReadLocation += (uint)OptionHex[0].Length/3;
     }
-    public GameObject EditorInstance { get; set; }
     public TMP_Dropdown Input { get; set; }
-    public void UpdateValue()
+    public override void UpdateValue()
     {
         SetValue(Input.value);
     }
-    public void DeleteInEditor()
-    {
-        GameObject.Destroy(EditorInstance);
-    }
-    public void CreateInEditor(Transform contentArea = null)
+    public override void CreateInEditor(Transform contentArea = null)
     {
         if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
         EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[2], contentArea);
@@ -72,7 +52,7 @@ public class EnumProp : GizProperty
             options.Add(new TMP_Dropdown.OptionData(OptionNames[i]));
         }
         Input.AddOptions(options);
-        Input.value = Value;
+        Input.value = (int)Value;
         EditorInstance.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = Name;
         //Set up event listeners
         Input.onValueChanged.AddListener((int val) =>
@@ -80,9 +60,5 @@ public class EnumProp : GizProperty
             UpdateValue();
             EditorManager.instance.CheckValues();
         });
-    }
-    public string GetValueString()
-    {
-        return Value.ToString();
     }
 }

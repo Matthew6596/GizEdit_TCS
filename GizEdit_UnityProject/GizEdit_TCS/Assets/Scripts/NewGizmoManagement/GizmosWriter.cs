@@ -18,24 +18,7 @@ public class GizmosWriter : MonoBehaviour
         writer = new TCSGizmosWriter();
     }
 
-    public int getPosAfter(string _val)
-    {
-        return gm.fhex.IndexOf(_val) + _val.Length;
-    }
-    public int getPosAfter(string _val, int startLocation)
-    {
-        return gm.fhex.IndexOf(_val, startLocation) + _val.Length;
-    }
-
-    static int B(int _bytes)
-    {
-        return (_bytes * 3);
-    }
-    static int B(uint _bytes)
-    {
-        return ((int)_bytes * 3);
-    }
-    string cHex = "";
+    List<byte> cBytes = new();
     BaseGizmo[] gizmos;
     int[] numOfEachGiz;
     public IEnumerator CompileGizmos(BaseGizmo[] gizs, int[] numberOfEachGizmo)
@@ -49,34 +32,21 @@ public class GizmosWriter : MonoBehaviour
         int gizsDone = 0;
 
         //start file
-        cHex = "01 00 00 00 ";
+        cBytes.AddRange(BitConverter.GetBytes(1)); //version?
 
         //Gizmo Sections
         for (int i = 0; i < numberOfEachGizmo.Length; i++)
         {
             yield return null;
-            ConvertSectionToHex(i, gizsDone, writer.GetExtraHeaderStuff(i,numberOfEachGizmo));
+            ConvertSectionToBin(i, gizsDone, writer.GetExtraHeaderStuff(i,numberOfEachGizmo));
             gizsDone += numberOfEachGizmo[i];
             //progress bar
         }
 
         //end file
-        cHex += "00 00 00 00 ";
+        cBytes.AddRange(BitConverter.GetBytes(0));
 
-        StartCoroutine(HexToBytes());
-    }
-    public IEnumerator HexToBytes()
-    {
-        yield return null; //<<temp
-        int _l = cHex.Length / 3;
-        byte[] _b = new byte[_l];
-        for (int i = 0; i < _l; i++)
-        {
-            _b[i] = Convert.ToByte(TypeConverter.HexToInt8(cHex.Substring(i * 3, 3)));
-
-            //if (i % 2000 == 0) { barImg.fillAmount = (float)i / _l; yield return null; } <<Progress bar
-        }
-        ExportGizFile(_b);
+        ExportGizFile(cBytes.ToArray());
     }
     public void ExportGizFile(byte[] compiledBytes)
     {
@@ -89,29 +59,35 @@ public class GizmosWriter : MonoBehaviour
         //loadingStuff.SetActive(false);
         //EditorManager.TaskCompletePopup();
     }
-    public string ConvertGizmosToHex(int sectionNum, int start)
+    public byte[] ConvertGizmosToBin(int sectionNum, int start)
     {
-        string ret="";
+        List<byte> ret = new();
         int len = numOfEachGiz[sectionNum] + start;
         for (int i = start; i < len; i++)
         {
-            ret += gizmos[i].ConvertToHex();
+            ret.AddRange(gizmos[i].ToBin());
         }
-        return ret;
+        return ret.ToArray();
     }
-    public void ConvertSectionToHex(int compileSection, int gizsDone, string extraHeaderStuff)
+    public void ConvertSectionToBin(int compileSection, int gizsDone, byte[] extraHeaderStuff)
     {
-        string hh = writer.headerHex[compileSection];
-        int afterHead = getPosAfter(hh);
-        uint numBytes = gm.FSliceInt32(afterHead/3);
+        byte[] hb = writer.headerBytes[compileSection];
+        //int afterHead = GizmosReader.reader.ReadLocation + hb.Length;
+        GizmosReader.reader.ReadLocation += hb.Length;
+        int numBytes = GameManager.ReadInt32();
         if (GizmosReader.reader.sectionReady[compileSection])
         {
-            string r = ConvertGizmosToHex(compileSection, gizsDone);
-            cHex += hh + TypeConverter.Int32ToHex((uint)(r.Length+extraHeaderStuff.Length) / 3) + extraHeaderStuff + r;
+            byte[] b = ConvertGizmosToBin(compileSection, gizsDone);
+            cBytes.AddRange(hb);
+            cBytes.AddRange(BitConverter.GetBytes(b.Length + extraHeaderStuff.Length));
+            cBytes.AddRange(extraHeaderStuff);
+            cBytes.AddRange(b);
+            //cHex += hh + TypeConverter.Int32ToHex((uint)(r.Length+extraHeaderStuff.Length) / 3) + extraHeaderStuff + r;
         }
         else
         {
-            cHex += gm.fhex.Substring(afterHead - hh.Length, hh.Length + B(4 + numBytes));
+            cBytes.AddRange(hb);
+            cBytes.AddRange(GameManager.ReadSlice(numBytes));
         }
     }
 }

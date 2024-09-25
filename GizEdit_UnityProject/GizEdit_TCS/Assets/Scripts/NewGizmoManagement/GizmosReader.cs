@@ -12,14 +12,6 @@ public class GizmosReader : MonoBehaviour
 
     public static IGizmosReader reader;
 
-    public static int B(int _bytes)
-    {
-        return (_bytes * 3);
-    }
-    public static int B(uint _bytes)
-    {
-        return ((int)_bytes * 3);
-    }
     // Start is called before the first frame update
     void Start()
     {
@@ -53,44 +45,18 @@ public class GizmosReader : MonoBehaviour
         if (path.Length != 0)
         {
             LastReadPath = path;
-            byte[] fbytes = System.IO.File.ReadAllBytes(path);
-            /*Debug.Log("File Selected: " + path);
-            loadingStuff.SetActive(true);
-            changeLoadText("LOADING...");*/
-            StartCoroutine(BytesToHex(fbytes));
-            //fp.startLoadGizmos();
+            GameManager.gmInstance.bytes = System.IO.File.ReadAllBytes(path);
+            StartCoroutine(reader.ReadGizmos());
         }
         else
         {
             Debug.Log("No file selected");
         }
     }
-    public BaseGizmo CreateGizmo(int section, GameObject obj)
-    {
-        return reader.CreateGizmo(section, obj);
-    }
-    public IEnumerator BytesToHex(byte[] _fbytes)
-    {
-        yield return null; //<<temp
-        string _b = "";
-        int _l = _fbytes.Length;
-        int c = 0;
-        while (c < _l)
-        {
-            _b += TypeConverter.Int8ToHex(_fbytes[c]) + " ";
-            c++;
-
-            //if (c % 2000 == 0) { barImg.fillAmount = (float)c / _l; yield return null; }
-        }
-        gm.fhex = _b;
-        StartCoroutine(reader.ReadGizmos());
-    }
+    public BaseGizmo CreateGizmo(int section, GameObject obj){return reader.CreateGizmo(section, obj);}
     
-    static List<string> gizTypes = new List<string>{"GizObstacle","GizBuildit","GizForce","blowup","GizmoPickup","Lever","Spinner","MiniCut",
+    static List<string> gizTypes = new(){"GizObstacle","GizBuildit","GizForce","blowup","GizmoPickup","Lever","Spinner","MiniCut",
     "Tube","ZipUp","GizTurret","BombGenerator","Panel","HatMachine","PushBlocks","Torp Machine","ShadowEditor","GizObstacleChild",
         "GizBuilditChild","GizForceChild","blowupChild"};
-    public static int GetGizType(string typeName)
-    {
-        return gizTypes.IndexOf(typeName);
-    }
+    public static int GetGizType(string typeName){return gizTypes.IndexOf(typeName);}
 }

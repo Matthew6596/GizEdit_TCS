@@ -6,41 +6,25 @@ using UnityEngine;
 
 public class Int16Prop : GizProperty
 {
-    public string Name { get; set; }
-    public uint Value { get; set; }
-    public Int16Prop(string name, uint defaultValue)
+    public Int16Prop(string name, ushort defaultValue)
     {
         Set(name, defaultValue);
     }
-    public void SetValue(uint value)
-    {
-        Value = value;
-    }
-    public void Set(string name, uint value)
+    public void Set(string name, ushort value)
     {
         Name = name;
         Value = value;
     }
-    //Unused SetValues
-    public void SetValue(bool value) { }
-    public void SetValue(bool[] value) { }
-    public void SetValue(int value) { SetValue((uint)value); }
-    public void SetValue(float value) { }
-    public void SetValue(string value) { }
-    public void SetValue(Vector3 value) { }
-    //
-    public string ConvertToHex()
+    public override byte[] ToBin()
     {
-        return TypeConverter.Int16ToHex(Value);
+        return BitConverter.GetBytes((ushort)Value);
     }
-    public void ReadFromHex()
+    public override void FromBin()
     {
-        SetValue(GameManager.gmInstance.FSliceInt16(GizmosReader.reader.ReadLocation));
-        GizmosReader.reader.ReadLocation += 2;
+        SetValue(GameManager.ReadInt16());
     }
-    public GameObject EditorInstance { get; set; }
     public TMP_InputField Input { get; set; }
-    public void UpdateValue()
+    public override void UpdateValue()
     {
         if (int.TryParse(Input.text, out int val))
         {
@@ -58,11 +42,7 @@ public class Int16Prop : GizProperty
             EditorManager.ThrowError("ERROR: " + Name + " property must be an integer number");
         }
     }
-    public void DeleteInEditor()
-    {
-        GameObject.Destroy(EditorInstance);
-    }
-    public void CreateInEditor(Transform contentArea = null)
+    public override void CreateInEditor(Transform contentArea = null)
     {
         if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
         EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[4], contentArea);
@@ -76,9 +56,5 @@ public class Int16Prop : GizProperty
             UpdateValue();
             EditorManager.instance.CheckValues();
         });
-    }
-    public string GetValueString()
-    {
-        return Value.ToString();
     }
 }

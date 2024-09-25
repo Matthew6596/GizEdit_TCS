@@ -12,6 +12,7 @@ public class EditorManager : MonoBehaviour
         "panels","hatmachines","pushblocks","torpmachines","shadoweditors",
         "grapples", "plugs", "technos" //unused
     };
+    public Transform moveGizmo;
     public int[] numEachGiz = new int[17];
     //public bool[] SectionsChanged = new bool[17];
 
@@ -53,10 +54,12 @@ public class EditorManager : MonoBehaviour
             if (LastDeletedGizmo != null) Destroy(LastDeletedGizmo);
             LastDeletedGizmo = SelectedGizmo;
             SelectedGizmo.SetActive(false);
+            moveGizmo.gameObject.SetActive(false);
         }
     }
     public void SelectGizmo(GameObject giz)
     {
+        moveGizmo.gameObject.SetActive(true);
         PreviousGizmo = SelectedGizmo;
         SelectedGizmo = giz;
         if (!GameManager.gmInstance.propertyPanel.activeSelf) GameManager.gmInstance.propertyPanel.SetActive(true);
@@ -68,6 +71,11 @@ public class EditorManager : MonoBehaviour
             }
         }
         SelectedGizmo.GetComponent<BaseGizmo>().CreateInEditor();
+        moveGizmo.position = SelectedGizmo.transform.position;
+    }
+    public void UpdateSelectedPos()
+    {
+        if(SelectedGizmo!=null) SelectedGizmo.transform.position = moveGizmo.GetChild(0).position;
     }
     public void ExportGizmos()
     {

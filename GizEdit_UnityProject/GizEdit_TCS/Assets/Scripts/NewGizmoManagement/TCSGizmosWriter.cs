@@ -1,77 +1,108 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class TCSGizmosWriter : IGizmosWriter
 {
-    public string[] headerHex { get;set; }
+    public byte[][] headerBytes { get;set; }
     public TCSGizmosWriter()
     {
-        headerHex = new string[]{
-            "0B 00 00 00 47 69 7A 4F 62 73 74 61 63 6C 65 ", "0A 00 00 00 47 69 7A 42 75 69 6C 64 69 74 ",
-        "08 00 00 00 47 69 7A 46 6F 72 63 65 ", "06 00 00 00 62 6C 6F 77 75 70 ", "0B 00 00 00 47 69 7A 6D 6F 50 69 63 6B 75 70 ",
-        "05 00 00 00 4C 65 76 65 72 ","07 00 00 00 53 70 69 6E 6E 65 72 ","07 00 00 00 4D 69 6E 69 43 75 74 ",
-        "04 00 00 00 54 75 62 65 ","05 00 00 00 5A 69 70 55 70 ","09 00 00 00 47 69 7A 54 75 72 72 65 74 ",
-        "0D 00 00 00 42 6F 6D 62 47 65 6E 65 72 61 74 6F 72 ","05 00 00 00 50 61 6E 65 6C ","0A 00 00 00 48 61 74 4D 61 63 68 69 6E 65 ",
-        "0A 00 00 00 50 75 73 68 42 6C 6F 63 6B 73 ","0C 00 00 00 54 6F 72 70 20 4D 61 63 68 69 6E 65 ",
-        "0C 00 00 00 53 68 61 64 6F 77 45 64 69 74 6F 72 ", "07 00 00 00 47 72 61 70 70 6C 65 ",
-        "04 00 00 00 50 6C 75 67 ","06 00 00 00 54 65 63 68 6E 6F "
+        headerBytes = new byte[][]
+        {
+            new byte[]{0x0B, 0x00, 0x00, 0x00, 0x47, 0x69, 0x7A, 0x4F, 0x62, 0x73, 0x74, 0x61, 0x63, 0x6C, 0x65},
+            new byte[]{0x0A, 0x00, 0x00, 0x00, 0x47, 0x69, 0x7A, 0x42, 0x75, 0x69, 0x6C, 0x64, 0x69, 0x74},
+            new byte[]{0x08, 0x00, 0x00, 0x00, 0x47, 0x69, 0x7A, 0x46, 0x6F, 0x72, 0x63, 0x65},
+            new byte[]{0x06, 0x00, 0x00, 0x00, 0x62, 0x6C, 0x6F, 0x77, 0x75, 0x70},
+            new byte[]{0x0B, 0x00, 0x00, 0x00, 0x47, 0x69, 0x7A, 0x6D, 0x6F, 0x50, 0x69, 0x63, 0x6B, 0x75, 0x70},
+            new byte[]{0x05, 0x00, 0x00, 0x00, 0x4C, 0x65, 0x76, 0x65, 0x72},
+            new byte[]{0x07, 0x00, 0x00, 0x00, 0x53, 0x70, 0x69, 0x6E, 0x6E, 0x65, 0x72},
+            new byte[]{0x07, 0x00, 0x00, 0x00, 0x4D, 0x69, 0x6E, 0x69, 0x43, 0x75, 0x74},
+            new byte[]{0x04, 0x00, 0x00, 0x00, 0x54, 0x75, 0x62, 0x65},
+            new byte[]{0x05, 0x00, 0x00, 0x00, 0x5A, 0x69, 0x70, 0x55, 0x70},
+            new byte[]{0x09, 0x00, 0x00, 0x00, 0x47, 0x69, 0x7A, 0x54, 0x75, 0x72, 0x72, 0x65, 0x74},
+            new byte[]{0x0D, 0x00, 0x00, 0x00, 0x42, 0x6F, 0x6D, 0x62, 0x47, 0x65, 0x6E, 0x65, 0x72, 0x61, 0x74, 0x6F, 0x72},
+            new byte[]{0x05, 0x00, 0x00, 0x00, 0x50, 0x61, 0x6E, 0x65, 0x6C},
+            new byte[]{0x0A, 0x00, 0x00, 0x00, 0x48, 0x61, 0x74, 0x4D, 0x61, 0x63, 0x68, 0x69, 0x6E, 0x65},
+            new byte[]{0x0A, 0x00, 0x00, 0x00, 0x50, 0x75, 0x73, 0x68, 0x42, 0x6C, 0x6F, 0x63, 0x6B, 0x73},
+            new byte[]{0x0C, 0x00, 0x00, 0x00, 0x54, 0x6F, 0x72, 0x70, 0x20, 0x4D, 0x61, 0x63, 0x68, 0x69, 0x6E, 0x65},
+            new byte[]{0x0C, 0x00, 0x00, 0x00, 0x53, 0x68, 0x61, 0x64, 0x6F, 0x77, 0x45, 0x64, 0x69, 0x74, 0x6F, 0x72},
+            new byte[]{0x07, 0x00, 0x00, 0x00, 0x47, 0x72, 0x61, 0x70, 0x70, 0x6C, 0x65},
+            new byte[]{0x04, 0x00, 0x00, 0x00, 0x50, 0x6C, 0x75, 0x67},
+            new byte[]{0x06, 0x00, 0x00, 0x00, 0x54, 0x65, 0x63, 0x68, 0x6E, 0x6F}
         };
     }
-    public string GetExtraHeaderStuff(int gizSection, int[] numOfEachGiz)
+    public byte[] GetExtraHeaderStuff(int gizSection, int[] numOfEachGiz)
     {
-        string ret = "";
-        string helper1 = "";
+        List<byte> ret = new();
         switch (gizSection)
         {
             //Obstacle
-            case 0: return "";
+            case 0: return new byte[] { };
             //Buildit
-            case 1: return "09 " + TypeConverter.Int16ToHex((uint)numOfEachGiz[1]);
+            case 1:
+                ret.Add(9); ret.AddRange(BitConverter.GetBytes((short)numOfEachGiz[1]));
+                return ret.ToArray();
             //Force
             case 2:
-                helper1 = TypeConverter.Int16ToHex((uint)numOfEachGiz[2]);
-                return "10 " + helper1;
+                ret.Add(0x10); ret.AddRange(BitConverter.GetBytes((short)numOfEachGiz[2]));
+                return ret.ToArray();
             //Blowup
-            case 3: return "";
+            case 3: return new byte[] { };
             //Pickup
             case 4:
-                helper1 = GizmosReader.reader.headerData[4];
+                byte[] helper1 = GizmosReader.reader.headerData[4];
                 if (helper1.Length > 0)
                 {
-                    if (helper1.Length > 1) ret = "07 00 00 00 " + TypeConverter.Int32ToHex((uint)numOfEachGiz[4]) + "01 00 00 00 " + helper1;
-                    else { ret = "0" + helper1 + " 00 00 00 " + TypeConverter.Int32ToHex((uint)numOfEachGiz[4]) + "01 00 00 00 "; }
+                    if (helper1.Length > 1||(helper1[0] > 0x0F && helper1.Length == 1))
+                    {
+                        ret.AddRange(BitConverter.GetBytes(7));
+                        ret.AddRange(BitConverter.GetBytes(numOfEachGiz[4]));
+                        ret.AddRange(BitConverter.GetBytes(1));
+                        ret.AddRange(helper1);
+                    }
+                    else
+                    {
+                        ret.AddRange(helper1); ret.Add(0); ret.Add(0); ret.Add(0);
+                        ret.AddRange(BitConverter.GetBytes(numOfEachGiz[4]));
+                        ret.AddRange(BitConverter.GetBytes(1));
+                    }
                 }
                 else
                 {
-                    ret = "07 00 00 00 " + TypeConverter.Int32ToHex((uint)numOfEachGiz[4]) + "01 00 00 00 00 00 20 41 00 00 80 3F ";
+                    ret.AddRange(BitConverter.GetBytes(7));
+                    ret.AddRange(BitConverter.GetBytes(numOfEachGiz[4]));
+                    ret.AddRange(BitConverter.GetBytes(1));
+                    ret.Add(0); ret.Add(0); ret.Add(0x20); ret.Add(0x41);
+                    ret.AddRange(BitConverter.GetBytes(1f));
+                    //ret = "07 00 00 00 " + TypeConverter.Int32ToHex((uint)numOfEachGiz[4]) + "01 00 00 00 00 00 20 41 00 00 80 3F ";
                 }
-                return ret;
+                return ret.ToArray();
             //Lever
-            case 5: return "";
+            case 5: return new byte[] { };
             //Spinner
-            case 6: return "";
+            case 6: return new byte[] { };
             //Minicut
-            case 7: return "";
+            case 7: return new byte[] { };
             //Tube
-            case 8: return "";
+            case 8: return new byte[] { };
             //ZipUp
-            case 9: return "";
+            case 9: return new byte[] { };
             //Turret
-            case 10: return "";
+            case 10: return new byte[] { };
             //BombGenerator
-            case 11: return "";
+            case 11: return new byte[] { };
             //Panel
-            case 12: return "";
+            case 12: return new byte[] { };
             //HatMachine
-            case 13: return "";
+            case 13: return new byte[] { };
             //PushBlocks
-            case 14: return "";
+            case 14: return new byte[] { };
             //TorpMachine
-            case 15: return "";
+            case 15: return new byte[] { };
             //ShadowEditor
-            case 16: return "";
+            case 16: return new byte[] { };
         }
-        return "";
+        return new byte[]{};
     }
 }

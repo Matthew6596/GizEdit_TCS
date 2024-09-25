@@ -6,41 +6,25 @@ using UnityEngine;
 
 public class AngleProp : GizProperty
 {
-    public string Name { get; set; }
-    public float Value { get; set; }
     public AngleProp(string name, float defaultValue)
     {
         Set(name, defaultValue);
-    }
-    public void SetValue(float value)
-    {
-        Value = value;
     }
     public void Set(string name, float value)
     {
         Name = name;
         Value = value;
     }
-    //Unused SetValues
-    public void SetValue(bool value) { }
-    public void SetValue(bool[] value) { }
-    public void SetValue(int value) { }
-    public void SetValue(uint value) { }
-    public void SetValue(string value) { }
-    public void SetValue(Vector3 value) { }
-    //
-    public string ConvertToHex()
+    public override byte[] ToBin()
     {
-        return TypeConverter.Int16ToHex(TypeConverter.FloatToInt16Angle(Value));
+        return BitConverter.GetBytes(TypeConverter.FloatToInt16Angle((float)Value));
     }
-    public void ReadFromHex()
+    public override void FromBin()
     {
-        SetValue(TypeConverter.Int16AngleToFloat(GameManager.gmInstance.FSliceInt16(GizmosReader.reader.ReadLocation)));
-        GizmosReader.reader.ReadLocation += 2;
+        SetValue(TypeConverter.Int16AngleToFloat(GameManager.ReadInt16()));
     }
-    public GameObject EditorInstance { get; set; }
     public TMP_InputField Input { get; set; }
-    public void UpdateValue()
+    public override void UpdateValue()
     {
         if (float.TryParse(Input.text, out float val)) {
             while (val < 0) val += 360;
@@ -49,15 +33,11 @@ public class AngleProp : GizProperty
         }
         else
         {
-            if(Input.text!=".")
+            if(Input.text!="."&&Input.text!="")
                 EditorManager.ThrowError("ERROR: " + Name + " property must be a floating point number");
         }
     }
-    public void DeleteInEditor()
-    {
-        GameObject.Destroy(EditorInstance);
-    }
-    public void CreateInEditor(Transform contentArea = null)
+    public override void CreateInEditor(Transform contentArea = null)
     {
         if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
 
@@ -71,9 +51,5 @@ public class AngleProp : GizProperty
             UpdateValue();
             EditorManager.instance.CheckValues();
         });
-    }
-    public string GetValueString()
-    {
-        return Value.ToString();
     }
 }

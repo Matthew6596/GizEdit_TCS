@@ -1,7 +1,5 @@
-using Palmmedia.ReportGenerator.Core.Parser.Filtering;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GizForce : BaseGizmo
@@ -17,7 +15,7 @@ public class GizForce : BaseGizmo
             new BoolGroupProp(new string[]{"Dark Side","End State (unknown)","","","","","",""},
                 new bool[]{false,false,false,false,false,false,false,false},new bool[]{true,true,false,false,false,false,false,false}),
             new HexProp("Unknown 1","00 00 00 "),
-            new BoolProp("Not Togglable",true,"FF "),
+            new BoolProp("Not Togglable",true,0xFF),
             new HexProp("Unknown 2","00 00 "),
             new ChildListProp("Force Children",0,DefaultChildManager.defaultChildrenGizmos[2]),
             new Float32Prop("Force Speed",1),
@@ -53,9 +51,9 @@ public class GizForce : BaseGizmo
             }
 
         //Name & position
-        name = GizProperties[0].GetValueString();
+        name = GizProperties[0].GetValue<string>();
         if (name == "") name = "UnnamedForce";
-        transform.position = TypeConverter.ParseVec3(GizProperties[1].GetValueString());
+        transform.position = GizProperties[1].GetValue<Vector3>();
     }
 
     Mesh setMesh()
@@ -65,9 +63,7 @@ public class GizForce : BaseGizmo
     }
     Material setMaterial()
     {
-        string v = GizProperties[5].GetValueString();
-        bool darkSide = bool.Parse(v[..v.IndexOf(',')]);
-        int m = darkSide?1 : 0;
+        int m = GizProperties[5].GetValue<bool[]>()[0] ? 1 : 0;
         return transform.parent.GetComponent<MeshRenderer>().materials[m];
     }
     public override string GetGizType() { return "GizForce"; }

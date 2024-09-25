@@ -39,9 +39,9 @@ public class GizBuildit : BaseGizmo
             }
 
         //Name & position
-        name = GizProperties[0].GetValueString();
+        name = GizProperties[0].GetValue<string>();
         if (name == "") name = "UnnamedBuildit";
-        transform.position = TypeConverter.ParseVec3(GizProperties[1].GetValueString());
+        transform.position = GizProperties[1].GetValue<Vector3>();
     }
 
     Mesh setMesh()

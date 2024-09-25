@@ -4,12 +4,9 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Windows;
 
 public class ChildListProp : GizProperty
 {
-    public string Name { get; set; }
-    public int Value { get; set; } //Selected child
     public List<BaseGizmo> Children { get; set; }
     bool inc03;
     BaseGizmo DefaultChild { get; set; }
@@ -19,56 +16,44 @@ public class ChildListProp : GizProperty
         Set(name, defaultValue);
         inc03 = include03;
     }
-    public void SetValue(int value)
-    {
-        Value = value;
-    }
     public void Set(string name, int value)
     {
         Name = name;
         Value = value;
     }
-    //Unused SetValues
-    public void SetValue(bool value) { }
-    public void SetValue(bool[] value) { }
-    public void SetValue(uint value) { }
-    public void SetValue(float value) { }
-    public void SetValue(string value) { }
-    public void SetValue(Vector3 value) { }
-    //
-    public string ConvertToHex()
+    public override byte[] ToBin()
     {
-        string ret=TypeConverter.Int8ToHex((uint)Children.Count)+" ";
-        if (inc03) ret = "03 " + ret;
+        List<byte> ret = new();
+        if (inc03) ret.Add(3);
+        ret.Add((byte)Children.Count);
+
         foreach(BaseGizmo _c in Children)
         {
             foreach(GizProperty _p in _c.GizProperties)
             {
-                ret += _p.ConvertToHex();
+                ret.AddRange(_p.ToBin());
             }
         }
-        return ret;
+        return ret.ToArray();
     }
-    public void ReadFromHex()
+    public override void FromBin()
     {
         if (inc03) GizmosReader.reader.ReadLocation++;
         Children = new();
-        uint _l = GameManager.gmInstance.FSliceInt8(GizmosReader.reader.ReadLocation);
-        GizmosReader.reader.ReadLocation++;
+        int _l = GameManager.ReadInt8();
         for (int i=0; i<_l; i++)
         {
             GameObject c = new();
             BaseGizmo g = GizmosReader.instance.CreateGizmo(GizmosReader.GetGizType(DefaultChild.GetGizType()), c);
-            g.ReadFromHex();
+            g.FromBin();
             Children.Add(g);
         }
     }
-    public GameObject EditorInstance { get; set; }
     public TMP_Dropdown Input { get; set; }
     public Button AddBtn { get; set; }
     public Button RemoveBtn { get; set; }
     public Transform ChildrenParent { get; set; }
-    public void UpdateValue()
+    public override void UpdateValue()
     {
         if (Children.Count > 0)
         {
@@ -81,11 +66,7 @@ public class ChildListProp : GizProperty
 
         }
     }
-    public void DeleteInEditor()
-    {
-        GameObject.Destroy(EditorInstance);
-    }
-    public void CreateInEditor(Transform contentArea=null)
+    public override void CreateInEditor(Transform contentArea=null)
     {
         if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
 
@@ -108,11 +89,11 @@ public class ChildListProp : GizProperty
         if (Children == null) Children = new();
         foreach (BaseGizmo child in Children)
         {
-            options.Add(new TMP_Dropdown.OptionData(child.GizProperties[0].GetValueString()));
+            options.Add(new TMP_Dropdown.OptionData(child.GizProperties[0].GetValue<string>()));
         }
         Input.AddOptions(options);
         //Set name and selected option
-        Input.value = Value;
+        Input.value = (int)Value;
         ChildrenParent.GetChild(1).GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = Name;
         //Create children properties
         if(Children.Count>0)
@@ -126,7 +107,7 @@ public class ChildListProp : GizProperty
                 BaseGizmo g = GizmosReader.instance.CreateGizmo(GizmosReader.GetGizType(DefaultChild.GetGizType()), c);
                 Children.Add(g);
                 //Add child to dropdown
-                List<TMP_Dropdown.OptionData> _o = new() { new TMP_Dropdown.OptionData(g.GizProperties[0].GetValueString()) };
+                List<TMP_Dropdown.OptionData> _o = new() { new TMP_Dropdown.OptionData(g.GizProperties[0].GetValue<string>()) };
                 Input.AddOptions(_o);
                 Input.value = Children.Count - 1;
 
@@ -165,14 +146,14 @@ public class ChildListProp : GizProperty
             int _cnt = Input.options.Count;
             for(int i=0; i<_cnt; i++)
             {
-                Input.options[i].text = Children[i].GizProperties[0].GetValueString();
+                Input.options[i].text = Children[i].GizProperties[0].GetValue<string>();
             }
             UpdateValue();
         });
     }
     void CreateChildrenProperties()
     {
-        BaseGizmo child = Children[Value];
+        BaseGizmo child = Children[(int)Value];
         foreach(GizProperty prop in child.GizProperties)
         {
             prop.CreateInEditor(ChildrenParent);
@@ -189,9 +170,5 @@ public class ChildListProp : GizProperty
         {
             prop.DeleteInEditor();
         }*/
-    }
-    public string GetValueString()
-    {
-        return Value.ToString();
     }
 }
