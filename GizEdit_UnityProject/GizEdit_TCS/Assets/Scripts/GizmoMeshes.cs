@@ -1,5 +1,3 @@
-using Microsoft.Unity.VisualStudio.Editor;
-using Ookii.Dialogs;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,14 +10,14 @@ public class GizmoMeshes : MonoBehaviour
         float scy = scale.y / 2;
         float scz = scale.z / 2;
         Vector3[] vertices = {
-            new Vector3 (-scx, -scy, -scz),
-            new Vector3 (scx, -scy, -scz),
-            new Vector3 (scx, scy, -scz),
-            new Vector3 (-scx, scy, -scz),
-            new Vector3 (-scx, scy, scz),
-            new Vector3 (scx, scy, scz),
-            new Vector3 (scx, -scy, scz),
-            new Vector3 (-scx, -scy, scz),
+            new (-scx, -scy, -scz),
+            new (scx, -scy, -scz),
+            new (scx, scy, -scz),
+            new (-scx, scy, -scz),
+            new (-scx, scy, scz),
+            new (scx, scy, scz),
+            new (scx, -scy, scz),
+            new (-scx, -scy, scz),
         };
 
         int[] triangles = {
@@ -38,15 +36,15 @@ public class GizmoMeshes : MonoBehaviour
         };
 
         Vector2[] uvs = {
-            new Vector2(0, 0.66f),
-            new Vector2(0.25f, 0.66f),
-            new Vector2(0, 0.33f),
-            new Vector2(0.25f, 0.33f),
+            new (0, 0.66f),
+            new (0.25f, 0.66f),
+            new (0, 0.33f),
+            new (0.25f, 0.33f),
 
-            new Vector2(0.5f, 0.66f),
-            new Vector2(0.5f, 0.33f),
-            new Vector2(0.75f, 0.66f),
-            new Vector2(0.75f, 0.33f),
+            new (0.5f, 0.66f),
+            new (0.5f, 0.33f),
+            new (0.75f, 0.66f),
+            new (0.75f, 0.33f),
         };
 
         Mesh mesh = new();

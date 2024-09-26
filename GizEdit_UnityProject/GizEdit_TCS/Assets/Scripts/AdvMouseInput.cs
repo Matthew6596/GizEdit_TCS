@@ -21,6 +21,8 @@ public class AdvMouseInput : MonoBehaviour
     Vector3 axisLock = Vector3.one;
     string moveGizAxis;
 
+    bool moving = false;
+
     GameObject prevHitObj;
 
     private void Start()
@@ -46,7 +48,7 @@ public class AdvMouseInput : MonoBehaviour
             worldPos = ray.GetPoint(distance);
         }
 
-        if (mouseDown)
+        if (moving)
         {
             Vector3 moveOffset = MultiplyVec3s(worldPos, axisLock);
             Vector3 moveGizPos = moveGiz.position;
@@ -65,37 +67,6 @@ public class AdvMouseInput : MonoBehaviour
         childT.localScale = new(childPos.x < camPos.x ? 1 : -1, childPos.y < camPos.y ? 1 : -1, childPos.z < camPos.z ? 1 : -1);
     }
 
-    /*Vector3 getPlaneAxis()
-    {
-        float xAng = camTransform.localEulerAngles.x;
-        float yAng = playerTransform.localEulerAngles.y; //between -180 to 180
-        if (xAng > 180) xAng -= 360;
-        if (yAng > 180) yAng -= 360;
-
-        if (xAng >= 45) return Vector3.up; //Looking down
-        if (xAng <= -45) return Vector3.down; //looking up
-
-        if (yAng >= -45 && yAng <=45) return Vector3.back; //facing forwards
-        if(yAng >45 && yAng<135) return Vector3.left; //facing right
-        if(yAng >-135 && yAng<-45) return Vector3.right; //facing left
-
-        return Vector3.forward; //facing backwards
-    }*/
-
-    private void OnDrawGizmos()
-    {
-        if (UnityEditor.EditorApplication.isPlaying)
-        {
-            //draw sphere grid of mouse world positions
-            Gizmos.color = Color.yellow;
-            if (mouseDown) Gizmos.color = Color.red;
-            Gizmos.DrawSphere(worldPos, 0.15f);
-
-            Gizmos.color = Color.magenta;
-            Gizmos.DrawCube(camTransform.position + (plane.normal * plane.distance), Vector3.one * 0.1f);
-        }
-    }
-
     public void MouseDown(InputAction.CallbackContext ctx)
     {
         mouseDown = ctx.performed;
@@ -107,6 +78,7 @@ public class AdvMouseInput : MonoBehaviour
                 GameObject hitObj = hit.transform.gameObject;
                 if (hitObj.CompareTag("editorGiz"))
                 {
+                    moving = true;
                     //Get giz axis
                     moveGizAxis = hitObj.name[(hitObj.name.IndexOf("move") + 4)..];
 
@@ -125,6 +97,7 @@ public class AdvMouseInput : MonoBehaviour
         }
         else
         {
+            moving = false;
             moveGizAxis = "";
             //Reset children offset
             moveGiz.position = moveGiz.GetChild(0).position;

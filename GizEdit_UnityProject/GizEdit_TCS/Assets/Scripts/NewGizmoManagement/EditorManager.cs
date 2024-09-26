@@ -64,19 +64,30 @@ public class EditorManager : MonoBehaviour
         PreviousGizmo = SelectedGizmo;
         SelectedGizmo = giz;
         if (!GameManager.gmInstance.propertyPanel.activeSelf) GameManager.gmInstance.propertyPanel.SetActive(true);
-        if (GameManager.gmInstance.propertyPanelContent.childCount>0)
+        ClearPropPanel();
+        SelectedGizmo.GetComponent<BaseGizmo>().CreateInEditor();
+        moveGizmo.position = SelectedGizmo.transform.position;
+    }
+    private void ClearPropPanel()
+    {
+        if (GameManager.gmInstance.propertyPanelContent.childCount > 0)
         {
-            for(int i=GameManager.gmInstance.propertyPanelContent.childCount-1; i>0; i--)
+            for (int i = GameManager.gmInstance.propertyPanelContent.childCount - 1; i > 0; i--)
             {
                 Destroy(GameManager.gmInstance.propertyPanelContent.GetChild(i).gameObject);
             }
         }
-        SelectedGizmo.GetComponent<BaseGizmo>().CreateInEditor();
-        moveGizmo.position = SelectedGizmo.transform.position;
     }
     public void UpdateSelectedPos()
     {
-        if(SelectedGizmo!=null) SelectedGizmo.transform.position = moveGizmo.GetChild(0).position;
+        if (SelectedGizmo != null)
+        {
+            SelectedGizmo.transform.position = moveGizmo.GetChild(0).position;
+            BaseGizmo giz = SelectedGizmo.GetComponent<BaseGizmo>();
+            giz.SetProp(1,SelectedGizmo.transform.position);
+            ClearPropPanel();
+            giz.CreateInEditor();
+        }
     }
     public void ExportGizmos()
     {
