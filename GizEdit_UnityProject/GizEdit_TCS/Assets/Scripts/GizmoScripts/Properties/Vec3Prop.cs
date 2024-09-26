@@ -40,7 +40,7 @@ public class Vec3Prop : GizProperty
         }
         else
         {
-            if (Inputs[0].text != ".")
+            if (Inputs[0].text != "." && Inputs[0].text != "")
                 EditorManager.ThrowError("ERROR: " + Name + " property.x must be a floating point number");
         }
         if (float.TryParse(Inputs[1].text, out float v2))
@@ -50,7 +50,7 @@ public class Vec3Prop : GizProperty
         }
         else
         {
-            if (Inputs[1].text != ".")
+            if (Inputs[1].text != "." && Inputs[1].text != "")
                 EditorManager.ThrowError("ERROR: " + Name + " property.y must be a floating point number");
         }
         if (float.TryParse(Inputs[2].text, out float v3))
@@ -60,7 +60,7 @@ public class Vec3Prop : GizProperty
         }
         else
         {
-            if (Inputs[2].text != ".")
+            if (Inputs[2].text != "." && Inputs[2].text != "")
                 EditorManager.ThrowError("ERROR: " + Name + " property.z must be a floating point number");
         }
         if (passed[0] && passed[1] && passed[2]) SetValue(val);

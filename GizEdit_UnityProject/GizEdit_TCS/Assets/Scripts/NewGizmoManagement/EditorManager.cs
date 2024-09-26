@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class EditorManager : MonoBehaviour
 {
@@ -37,7 +38,7 @@ public class EditorManager : MonoBehaviour
         popup.SetActive(true);
     }
     public void OpenPopup(GameObject _popupGroup){_popupGroup.SetActive(true);}
-    public void ClosePopup(GameObject _popupGroup){_popupGroup.SetActive(false);}
+    public void ClosePopup(GameObject _popupGroup){_popupGroup.SetActive(false); if (bufferFunction != null) bufferFunction = null; }
     public void CreatePopup(GameObject _popupGroup){Instantiate(_popupGroup,canvas);}
     public void DestroyPopup(GameObject _popupGroup){Destroy(_popupGroup);}
 
@@ -111,4 +112,9 @@ public class EditorManager : MonoBehaviour
             giz.CheckValues();
         }
     }
+
+    PopupBtnFunction bufferFunction;
+    public void BufferPopupFunction(PopupBtnFunction btn){bufferFunction = btn;}
+    public void ExecuteBufferFunction(){if (bufferFunction != null) bufferFunction.Confirm();}
+    public void OpenURL(string url){Application.OpenURL(url);}
 }

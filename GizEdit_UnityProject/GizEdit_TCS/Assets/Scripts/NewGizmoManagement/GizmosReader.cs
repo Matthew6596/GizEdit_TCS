@@ -53,6 +53,26 @@ public class GizmosReader : MonoBehaviour
             Debug.Log("No file selected");
         }
     }
+
+    public void OpenGSCFile()
+    {
+        var extensions = new[] {
+            new ExtensionFilter("Scene Files", new string[]{"GSC","gsc","Gsc"}),
+        };
+        string[] paths = gm.FileBrowser.OpenFilePanel("Scene File Search", "", extensions, false);
+        string path = (paths.Length > 0) ? paths[0] : "";
+        if (path.Length != 0)
+        {
+            LastReadPath = path;
+            GameManager.gmInstance.gscBytes = System.IO.File.ReadAllBytes(path);
+            NTBLReader.inst.ReadTable();
+        }
+        else
+        {
+            Debug.Log("No file selected");
+        }
+    }
+
     public BaseGizmo CreateGizmo(int section, GameObject obj){return reader.CreateGizmo(section, obj);}
     
     static List<string> gizTypes = new(){"GizObstacle","GizBuildit","GizForce","blowup","GizmoPickup","Lever","Spinner","MiniCut",

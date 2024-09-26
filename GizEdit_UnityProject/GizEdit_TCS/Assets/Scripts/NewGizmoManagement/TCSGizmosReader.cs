@@ -26,7 +26,6 @@ public class TCSGizmosReader : IGizmosReader
 
         for (int i = 0; i < 17; i++)
         {
-            Debug.Log(i+": "+ReadLocation);
             yield return null;
             int headLen = GameManager.ReadInt32();
             ReadLocation += headLen; //skip header name

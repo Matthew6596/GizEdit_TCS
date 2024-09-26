@@ -30,6 +30,8 @@ public class GameManager : MonoBehaviour
     public GameObject player;
     [NonSerialized]
     public byte[] bytes;
+    [NonSerialized]
+    public byte[] gscBytes;
 
     //CHANGE FOR MAC / LINUX
     public IStandaloneFileBrowser FileBrowser = new StandaloneFileBrowserWindows();
