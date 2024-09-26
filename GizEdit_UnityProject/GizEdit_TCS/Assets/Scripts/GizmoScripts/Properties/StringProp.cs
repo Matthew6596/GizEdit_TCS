@@ -22,7 +22,7 @@ public class StringProp : GizProperty
     {
         byte[] b = new byte[Length];
         string str = (string)Value;
-        for (int i = 1; i < Length; i++) if (i < str.Length) b[i] = (byte)str[i]; else b[i] = 0;
+        for (int i = 0; i < Length; i++) if (i < str.Length) b[i] = (byte)str[i]; else b[i] = 0;
         return b;
     }
     public override void FromBin()

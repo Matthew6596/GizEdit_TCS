@@ -95,13 +95,16 @@ public class EditorManager : MonoBehaviour
     }
     public BaseGizmo[] GetGizmos()
     {
-        Transform[] parents = new Transform[17];
+        List<Transform> parents = new();
         int numGizs = 0;
         for(int i=0; i<17; i++)
         {
-            parents[i] = GameObject.Find(GizmoParentNames[i]).transform;
-            numEachGiz[i] = parents[i].childCount;
-            numGizs += parents[i].childCount;
+            GameObject p = GameObject.Find(GizmoParentNames[i]);
+            if (p== null) continue;
+            parents.Add(p.transform);
+            int childCnt = parents[^1].childCount;
+            numEachGiz[i] = childCnt;
+            numGizs += childCnt;
         }
         BaseGizmo[] gizs = new BaseGizmo[numGizs];
         int cnt=0;

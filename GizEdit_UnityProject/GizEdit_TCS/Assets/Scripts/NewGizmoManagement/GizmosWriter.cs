@@ -21,16 +21,18 @@ public class GizmosWriter : MonoBehaviour
     List<byte> cBytes = new();
     BaseGizmo[] gizmos;
     int[] numOfEachGiz;
+    int gizIndex = 0;
     public IEnumerator CompileGizmos(BaseGizmo[] gizs, int[] numberOfEachGizmo)
     {
         //loadingStuff.SetActive(true);
         //changeLoadText("COMPILING...");
 
+        gizIndex = 0;
         gizmos = gizs;
         numOfEachGiz = numberOfEachGizmo;
 
-        int gizsDone = 0;
-
+        //int gizsDone = 0;
+        GizmosReader.reader.ReadLocation = 4;
         //start file
         cBytes.AddRange(BitConverter.GetBytes(1)); //version?
 
@@ -38,8 +40,17 @@ public class GizmosWriter : MonoBehaviour
         for (int i = 0; i < numberOfEachGizmo.Length; i++)
         {
             yield return null;
-            ConvertSectionToBin(i, gizsDone, writer.GetExtraHeaderStuff(i,numberOfEachGizmo));
-            gizsDone += numberOfEachGizmo[i];
+            //Debug.Log(i + ": " + cBytes.Count);
+            if (GizmosReader.reader.sectionReady[i])
+            {
+                ConvertSectionToBin(i, writer.GetExtraHeaderStuff(i, numberOfEachGizmo));
+            }
+            else
+            {
+                ConvertSectionToBin2(i);
+            }
+            
+            //gizsDone += numberOfEachGizmo[i];
             //progress bar
         }
 
@@ -59,35 +70,37 @@ public class GizmosWriter : MonoBehaviour
         //loadingStuff.SetActive(false);
         //EditorManager.TaskCompletePopup();
     }
-    public byte[] ConvertGizmosToBin(int sectionNum, int start)
+    public byte[] ConvertGizmosToBin(int sectionNum)
     {
         List<byte> ret = new();
-        int len = numOfEachGiz[sectionNum] + start;
-        for (int i = start; i < len; i++)
+        int len = numOfEachGiz[sectionNum];
+        for (int i = 0; i < len; i++, gizIndex++)
         {
-            ret.AddRange(gizmos[i].ToBin());
+            ret.AddRange(gizmos[gizIndex].ToBin());
         }
         return ret.ToArray();
     }
-    public void ConvertSectionToBin(int compileSection, int gizsDone, byte[] extraHeaderStuff)
+    public void ConvertSectionToBin2(int compileSection)
+    {
+        byte[] hb = writer.headerBytes[compileSection];
+        GizmosReader.reader.ReadLocation += hb.Length;
+        int numBytes = GameManager.ReadInt32();
+        cBytes.AddRange(hb);
+        cBytes.AddRange(BitConverter.GetBytes(numBytes));
+        cBytes.AddRange(GameManager.ReadSlice(numBytes));
+    }
+    public void ConvertSectionToBin(int compileSection, byte[] extraHeaderStuff)
     {
         byte[] hb = writer.headerBytes[compileSection];
         //int afterHead = GizmosReader.reader.ReadLocation + hb.Length;
         GizmosReader.reader.ReadLocation += hb.Length;
         int numBytes = GameManager.ReadInt32();
-        if (GizmosReader.reader.sectionReady[compileSection])
-        {
-            byte[] b = ConvertGizmosToBin(compileSection, gizsDone);
-            cBytes.AddRange(hb);
-            cBytes.AddRange(BitConverter.GetBytes(b.Length + extraHeaderStuff.Length));
-            cBytes.AddRange(extraHeaderStuff);
-            cBytes.AddRange(b);
-            //cHex += hh + TypeConverter.Int32ToHex((uint)(r.Length+extraHeaderStuff.Length) / 3) + extraHeaderStuff + r;
-        }
-        else
-        {
-            cBytes.AddRange(hb);
-            cBytes.AddRange(GameManager.ReadSlice(numBytes));
-        }
+        byte[] b = ConvertGizmosToBin(compileSection);
+        cBytes.AddRange(hb);
+        cBytes.AddRange(BitConverter.GetBytes(b.Length + extraHeaderStuff.Length));
+        cBytes.AddRange(extraHeaderStuff);
+        cBytes.AddRange(b);
+        GizmosReader.reader.ReadLocation += numBytes;
+        //cHex += hh + TypeConverter.Int32ToHex((uint)(r.Length+extraHeaderStuff.Length) / 3) + extraHeaderStuff + r;
     }
 }

@@ -6,18 +6,18 @@ using UnityEngine;
 
 public class Int16Prop : GizProperty
 {
-    public Int16Prop(string name, ushort defaultValue)
+    public Int16Prop(string name, short defaultValue)
     {
         Set(name, defaultValue);
     }
-    public void Set(string name, ushort value)
+    public void Set(string name, short value)
     {
         Name = name;
         Value = value;
     }
     public override byte[] ToBin()
     {
-        return BitConverter.GetBytes((ushort)Value);
+        return BitConverter.GetBytes((short)Value);
     }
     public override void FromBin()
     {
