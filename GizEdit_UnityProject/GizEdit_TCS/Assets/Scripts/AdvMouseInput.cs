@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.ComTypes;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -59,6 +58,11 @@ public class AdvMouseInput : MonoBehaviour
             moveGiz.position = moveGizPos;
             if(EditorManager.instance!=null)EditorManager.instance.UpdateSelectedPos();
         }
+
+        //Move giz faces camera
+        Transform childT = moveGiz.GetChild(0);
+        Vector3 childPos = childT.position, camPos=Camera.main.transform.position;
+        childT.localScale = new(childPos.x < camPos.x ? 1 : -1, childPos.y < camPos.y ? 1 : -1, childPos.z < camPos.z ? 1 : -1);
     }
 
     /*Vector3 getPlaneAxis()

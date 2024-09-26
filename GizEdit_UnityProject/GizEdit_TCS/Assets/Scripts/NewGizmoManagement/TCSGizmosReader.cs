@@ -16,7 +16,7 @@ public class TCSGizmosReader : IGizmosReader
     public TCSGizmosReader()
     {
         gm = GameManager.gmInstance;
-        sectionReady = new bool[]{false,false,false, false, true, false, false, false, false, false, false, false, false, false, false, false, false};
+        sectionReady = new bool[]{false,true,true, false, true, false, false, false, false, false, false, false, false, false, false, false, false};
         headerData = new byte[17][];
     }
 
@@ -26,6 +26,7 @@ public class TCSGizmosReader : IGizmosReader
 
         for (int i = 0; i < 17; i++)
         {
+            Debug.Log(i+": "+ReadLocation);
             yield return null;
             int headLen = GameManager.ReadInt32();
             ReadLocation += headLen; //skip header name

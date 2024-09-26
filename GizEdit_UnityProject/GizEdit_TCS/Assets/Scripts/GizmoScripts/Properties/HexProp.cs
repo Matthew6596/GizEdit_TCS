@@ -7,9 +7,11 @@ using UnityEngine;
 public class HexProp : GizProperty
 {
     public int Length { get; set; }
+    public int ByteLen { get; set; }
     public HexProp(string name, string defaultValue)
     {
         Length = defaultValue.Length;
+        ByteLen = Length/3;
         Set(name, defaultValue);
     }
     public void Set(string name, string value)
@@ -27,7 +29,7 @@ public class HexProp : GizProperty
     }
     public override void FromBin()
     {
-        SetValue(BitConverter.ToString(GameManager.ReadSlice(Length)).Replace("-", " "));
+        SetValue(BitConverter.ToString(GameManager.ReadSlice(ByteLen)).Replace("-", " "));
     }
     public TMP_InputField Input { get; set; }
     bool endEditValidate;
