@@ -7,7 +7,7 @@ public class GizmoPickup : BaseGizmo
     public GizmoPickup()
     {
         GizProperties = new GizProperty[]{
-            new StringProp("Name", "",8),
+            new StringProp("Name", "Unnamedp",8),
             new Vec3Prop("Position",Vector3.zero),
             new EnumProp("Type",0,pickupTypeNames,pickupTypeBytes),
             new BoolProp("Triggered Spawn",false,2),
@@ -21,7 +21,7 @@ public class GizmoPickup : BaseGizmo
         mcollider.sharedMesh = mfilter.mesh;
         mrender.material = setMaterial();
         name = GizProperties[0].GetValue<string>();
-        if (name == "") name = "UnnamedPickup";
+        if (name == "") name = "Unnamedp";
         transform.position = GizProperties[1].GetValue<Vector3>();
     }
 

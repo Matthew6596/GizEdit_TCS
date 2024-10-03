@@ -53,6 +53,17 @@ public class TypeConverter : MonoBehaviour
         }
         return ret;
     }
+    public static string ReadString32(byte[] bytes, ref int readLocation)
+    {
+        int len = ReadInt32(bytes, ref readLocation);
+        string ret = "";
+        for (int i = 0; i < len; i++)
+        {
+            ret += (char)bytes[readLocation];
+            readLocation++;
+        }
+        return ret;
+    }
     public static string ReadFixedString(byte[] bytes, ref int readLocation, int len)
     {
         string ret = "";
@@ -71,4 +82,6 @@ public class TypeConverter : MonoBehaviour
             ret.Add(bytes[readLocation]);
         return ret.ToArray();
     }
+
+    public static string blockIdToString(int id){ int tmp=0; return ReadFixedString(BitConverter.GetBytes(id), ref tmp, 4);}
 }

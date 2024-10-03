@@ -93,7 +93,9 @@ public class TCSGizmosWriter : IGizmosWriter
             //BombGenerator
             case 11: return new byte[] { };
             //Panel
-            case 12: return new byte[] { };
+            case 12:
+                ret.AddRange(BitConverter.GetBytes(8)); ret.AddRange(BitConverter.GetBytes(numOfEachGiz[12]));
+                return ret.ToArray();
             //HatMachine
             case 13: return new byte[] { };
             //PushBlocks

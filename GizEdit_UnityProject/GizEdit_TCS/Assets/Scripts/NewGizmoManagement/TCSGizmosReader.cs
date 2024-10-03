@@ -16,7 +16,7 @@ public class TCSGizmosReader : IGizmosReader
     public TCSGizmosReader()
     {
         gm = GameManager.gmInstance;
-        sectionReady = new bool[]{false,true,true, false, true, false, false, false, false, false, false, false, false, false, false, false, false};
+        sectionReady = new bool[]{false,true,true, false, true, false, false, false, false, false, false, false, true, false, false, false, false};
         headerData = new byte[17][];
     }
 
@@ -72,10 +72,10 @@ public class TCSGizmosReader : IGizmosReader
             case 3: return n;
             //Pickup
             case 4:
-                int pickupH = GameManager.ReadInt32();
+                int pickupVersion = GameManager.ReadInt32();
                 n = GameManager.ReadInt32(); ReadLocation += 4;
-                if (pickupH == 7) { headerData[4] = GameManager.ReadSlice(8); }
-                else headerData[4] = BitConverter.GetBytes(pickupH);
+                if (pickupVersion == 7) { headerData[4] = GameManager.ReadSlice(8); }
+                else headerData[4] = BitConverter.GetBytes(pickupVersion);
                 return n;
             //Lever
             case 5: return n;
@@ -92,7 +92,11 @@ public class TCSGizmosReader : IGizmosReader
             //BombGenerator
             case 11: return n;
             //Panel
-            case 12: return n;
+            case 12:
+                Debug.Log(ReadLocation);
+                int panelVersion = GameManager.ReadInt32();
+                n = GameManager.ReadInt32();
+                return n;
             //HatMachine
             case 13: return n;
             //PushBlocks
@@ -134,7 +138,7 @@ public class TCSGizmosReader : IGizmosReader
             //BombGenerator
             case 11: return g;
             //Panel
-            case 12: return g;
+            case 12: return obj.AddComponent<Panel>();
             //HatMachine
             case 13: return g;
             //PushBlocks
