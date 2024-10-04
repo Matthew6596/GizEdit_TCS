@@ -32,7 +32,7 @@ public class TCSGizmosWriter : IGizmosWriter
             new byte[]{0x06, 0x00, 0x00, 0x00, 0x54, 0x65, 0x63, 0x68, 0x6E, 0x6F}
         };
     }
-    public byte[] GetExtraHeaderStuff(int gizSection, int[] numOfEachGiz)
+    public byte[] GetExtraHeaderStuff(int gizSection, int[][] numOfEachGiz)
     {
         List<byte> ret = new();
         switch (gizSection)
@@ -41,14 +41,18 @@ public class TCSGizmosWriter : IGizmosWriter
             case 0: return new byte[] { };
             //Buildit
             case 1:
-                ret.Add(9); ret.AddRange(BitConverter.GetBytes((short)numOfEachGiz[1]));
+                ret.Add(9); ret.AddRange(BitConverter.GetBytes((short)numOfEachGiz[1][0]));
                 return ret.ToArray();
             //Force
             case 2:
-                ret.Add(0x10); ret.AddRange(BitConverter.GetBytes((short)numOfEachGiz[2]));
+                ret.Add(0x10); ret.AddRange(BitConverter.GetBytes((short)numOfEachGiz[2][0]));
                 return ret.ToArray();
             //Blowup
-            case 3: return new byte[] { };
+            case 3:
+                ret.AddRange(BitConverter.GetBytes(31));
+                ret.AddRange(BitConverter.GetBytes(numOfEachGiz[3][0]));
+                ret.AddRange(BitConverter.GetBytes(numOfEachGiz[3][1]));
+                return ret.ToArray();
             //Pickup
             case 4:
                 byte[] helper1 = GizmosReader.reader.headerData[4];
@@ -57,21 +61,21 @@ public class TCSGizmosWriter : IGizmosWriter
                     if (helper1.Length > 1||(helper1[0] > 0x0F && helper1.Length == 1))
                     {
                         ret.AddRange(BitConverter.GetBytes(7));
-                        ret.AddRange(BitConverter.GetBytes(numOfEachGiz[4]));
+                        ret.AddRange(BitConverter.GetBytes(numOfEachGiz[4][0]));
                         ret.AddRange(BitConverter.GetBytes(1));
                         ret.AddRange(helper1);
                     }
                     else
                     {
                         ret.AddRange(helper1); ret.Add(0); ret.Add(0); ret.Add(0);
-                        ret.AddRange(BitConverter.GetBytes(numOfEachGiz[4]));
+                        ret.AddRange(BitConverter.GetBytes(numOfEachGiz[4][0]));
                         ret.AddRange(BitConverter.GetBytes(1));
                     }
                 }
                 else
                 {
                     ret.AddRange(BitConverter.GetBytes(7));
-                    ret.AddRange(BitConverter.GetBytes(numOfEachGiz[4]));
+                    ret.AddRange(BitConverter.GetBytes(numOfEachGiz[4][0]));
                     ret.AddRange(BitConverter.GetBytes(1));
                     ret.Add(0); ret.Add(0); ret.Add(0x20); ret.Add(0x41);
                     ret.AddRange(BitConverter.GetBytes(1f));
@@ -94,7 +98,7 @@ public class TCSGizmosWriter : IGizmosWriter
             case 11: return new byte[] { };
             //Panel
             case 12:
-                ret.AddRange(BitConverter.GetBytes(8)); ret.AddRange(BitConverter.GetBytes(numOfEachGiz[12]));
+                ret.AddRange(BitConverter.GetBytes(8)); ret.AddRange(BitConverter.GetBytes(numOfEachGiz[12][0]));
                 return ret.ToArray();
             //HatMachine
             case 13: return new byte[] { };

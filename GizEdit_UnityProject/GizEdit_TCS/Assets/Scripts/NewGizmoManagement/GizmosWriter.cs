@@ -20,9 +20,9 @@ public class GizmosWriter : MonoBehaviour
 
     List<byte> cBytes = new();
     BaseGizmo[] gizmos;
-    int[] numOfEachGiz;
+    int[][] numOfEachGiz;
     int gizIndex = 0;
-    public IEnumerator CompileGizmos(BaseGizmo[] gizs, int[] numberOfEachGizmo)
+    public IEnumerator CompileGizmos(BaseGizmo[] gizs, int[][] numberOfEachGizmo)
     {
         //loadingStuff.SetActive(true);
         //changeLoadText("COMPILING...");
@@ -73,10 +73,13 @@ public class GizmosWriter : MonoBehaviour
     public byte[] ConvertGizmosToBin(int sectionNum)
     {
         List<byte> ret = new();
-        int len = numOfEachGiz[sectionNum];
-        for (int i = 0; i < len; i++, gizIndex++)
+        for (int j = 0; j < numOfEachGiz[sectionNum].Length; j++)
         {
-            ret.AddRange(gizmos[gizIndex].ToBin());
+            int len = numOfEachGiz[sectionNum][j];
+            for (int i = 0; i < len; i++, gizIndex++)
+            {
+                ret.AddRange(gizmos[gizIndex].ToBin());
+            }
         }
         return ret.ToArray();
     }

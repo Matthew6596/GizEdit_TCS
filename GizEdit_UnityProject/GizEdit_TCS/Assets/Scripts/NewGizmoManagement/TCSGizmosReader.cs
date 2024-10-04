@@ -42,17 +42,20 @@ public class TCSGizmosReader : IGizmosReader
     }
     void ReadGizmoSection(int readSection)
     {
-        int numGizs = ReadExtraHeaderStuff(readSection);
-        for (int i = 0; i < numGizs; i++)
+        List<int> numGizs = ReadExtraHeaderStuff(readSection);
+        for (int j = 0; j < numGizs.Count; j++)
         {
-            GameObject obj = new();
-            BaseGizmo giz = CreateGizmo(readSection, obj);
-            giz.FromBin();
+            for (int i = 0; i < numGizs[j]; i++)
+            {
+                GameObject obj = new();
+                BaseGizmo giz = CreateGizmo(readSection, obj,j);
+                giz.FromBin();
+            }
         }
     }
-    int ReadExtraHeaderStuff(int gizSection)
+    List<int> ReadExtraHeaderStuff(int gizSection)
     {
-        int n = 0;
+        List<int> n = new();
         switch (gizSection)
         {
             //Obstacle
@@ -60,20 +63,24 @@ public class TCSGizmosReader : IGizmosReader
             //Buildit
             case 1:
                 ReadLocation++;
-                n = GameManager.ReadInt16();
+                n.Add(GameManager.ReadInt16());
                 return n;
             //Force
             case 2:
                 byte forceH = GameManager.ReadInt8();
-                n = GameManager.ReadInt16();
+                n.Add(GameManager.ReadInt16());
                 if (forceH != 16) Debug.LogWarning("Update to force header reader needed: " + forceH);
                 return n;
             //Blowup
-            case 3: return n;
+            case 3: 
+                int blowupVersion = GameManager.ReadInt32();
+                n.Add(GameManager.ReadInt32());
+                n.Add(GameManager.ReadInt32());
+                return n;
             //Pickup
             case 4:
                 int pickupVersion = GameManager.ReadInt32();
-                n = GameManager.ReadInt32(); ReadLocation += 4;
+                n.Add(GameManager.ReadInt32()); ReadLocation += 4;
                 if (pickupVersion == 7) { headerData[4] = GameManager.ReadSlice(8); }
                 else headerData[4] = BitConverter.GetBytes(pickupVersion);
                 return n;
@@ -93,9 +100,8 @@ public class TCSGizmosReader : IGizmosReader
             case 11: return n;
             //Panel
             case 12:
-                Debug.Log(ReadLocation);
                 int panelVersion = GameManager.ReadInt32();
-                n = GameManager.ReadInt32();
+                n.Add(GameManager.ReadInt32());
                 return n;
             //HatMachine
             case 13: return n;
@@ -108,7 +114,7 @@ public class TCSGizmosReader : IGizmosReader
         }
         return n;
     }
-    public BaseGizmo CreateGizmo(int section, GameObject obj)
+    public BaseGizmo CreateGizmo(int section, GameObject obj, int subsection)
     {
         BaseGizmo g = null; //<<temp!!!
         switch (section)
@@ -120,7 +126,9 @@ public class TCSGizmosReader : IGizmosReader
             //Force
             case 2: return obj.AddComponent<GizForce>();
             //Blowup
-            case 3: return g;
+            case 3: 
+                if(subsection==0)return obj.AddComponent<blowupFx>();
+                else return obj.AddComponent<blowupGiz>();
             //Pickup
             case 4: return obj.AddComponent<GizmoPickup>();
             //Lever
@@ -153,8 +161,6 @@ public class TCSGizmosReader : IGizmosReader
             case 18: return obj.AddComponent<GizBuilditChild>();
             //ForceChild
             case 19: return obj.AddComponent<GizForceChild>();
-            //BlowupChild
-            case 20: return g;
         }
         GameObject.Destroy(obj);
         return null;

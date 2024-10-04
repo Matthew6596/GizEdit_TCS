@@ -73,7 +73,7 @@ public class GizmosReader : MonoBehaviour
         }
     }
 
-    public BaseGizmo CreateGizmo(int section, GameObject obj){return reader.CreateGizmo(section, obj);}
+    public BaseGizmo CreateGizmo(int section, GameObject obj,int subsection=0){return reader.CreateGizmo(section, obj,subsection);}
     
     static List<string> gizTypes = new(){"GizObstacle","GizBuildit","GizForce","blowup","GizmoPickup","Lever","Spinner","MiniCut",
     "Tube","ZipUp","GizTurret","BombGenerator","Panel","HatMachine","PushBlocks","Torp Machine","ShadowEditor","GizObstacleChild",

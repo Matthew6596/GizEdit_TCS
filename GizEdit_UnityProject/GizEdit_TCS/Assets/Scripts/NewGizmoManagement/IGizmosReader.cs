@@ -10,5 +10,5 @@ public interface IGizmosReader
     public int ReadLocation { get; set; }
     public byte[] getHeader(string titleName);
     public IEnumerator ReadGizmos();
-    public BaseGizmo CreateGizmo(int section, GameObject obj);
+    public BaseGizmo CreateGizmo(int section, GameObject obj, int subsection);
 }

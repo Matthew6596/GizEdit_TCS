@@ -11,6 +11,17 @@ abstract public class BaseGizmo : MonoBehaviour
     public MeshCollider mcollider;
     abstract public void CheckValues();
     public void SetProp(int num, object value) { GizProperties[num].SetValue(value); }
+    public void SetProp(string name, object value)
+    {
+        for(int i=0; i<GizProperties.Length; i++)
+        {
+            if (GizProperties[i].Name == name)
+            {
+                GizProperties[i].SetValue(value);
+                break;
+            }
+        }
+    }
     public byte[] ToBin()
     {
         List<byte> bytes = new();

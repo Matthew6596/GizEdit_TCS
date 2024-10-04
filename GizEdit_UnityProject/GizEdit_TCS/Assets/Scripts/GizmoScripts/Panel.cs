@@ -7,7 +7,7 @@ public class Panel : BaseGizmo
     public Panel()
     {
         GizProperties = new GizProperty[]{
-            new VarString32Prop("Name", "UnnamedPanel"),
+            new VarString32Prop("Name", "Unnamed"),
             new Vec3Prop("Position",Vector3.zero),
             new AngleProp("Rotation",0),
             new EnumProp("Type",0,panelTypes,panelTypeBytes),
@@ -28,7 +28,7 @@ public class Panel : BaseGizmo
         mrender.material = setMaterial();
         mrender.enabled = !GizProperties[4].GetValue<bool>();
         name = GizProperties[0].GetValue<string>();
-        if (name == "") name = "UnnamedPanel";
+        if (name == "") name = "Unnamed";
         transform.position = GizProperties[1].GetValue<Vector3>();
     }
 

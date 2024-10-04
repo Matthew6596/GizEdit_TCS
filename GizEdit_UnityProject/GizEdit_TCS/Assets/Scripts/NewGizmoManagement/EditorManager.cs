@@ -13,8 +13,10 @@ public class EditorManager : MonoBehaviour
         "panels","hatmachines","pushblocks","torpmachines","shadoweditors",
         "grapples", "plugs", "technos" //unused
     };
+    public static int[] numGizSubSections = { 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+
     public Transform moveGizmo;
-    public int[] numEachGiz = new int[17];
+    public int[][] numEachGiz = new int[17][];
     //public bool[] SectionsChanged = new bool[17];
 
     public GameObject SelectedGizmo;
@@ -84,7 +86,7 @@ public class EditorManager : MonoBehaviour
         {
             SelectedGizmo.transform.position = moveGizmo.GetChild(0).position;
             BaseGizmo giz = SelectedGizmo.GetComponent<BaseGizmo>();
-            giz.SetProp(1,SelectedGizmo.transform.position);
+            giz.SetProp("Position", SelectedGizmo.transform.position);
             ClearPropPanel();
             giz.CreateInEditor();
         }
@@ -99,11 +101,22 @@ public class EditorManager : MonoBehaviour
         int numGizs = 0;
         for(int i=0; i<17; i++)
         {
+            numEachGiz[i] = new int[numGizSubSections[i]];
             GameObject p = GameObject.Find(GizmoParentNames[i]);
             if (p== null) continue;
             parents.Add(p.transform);
+
             int childCnt = parents[^1].childCount;
-            numEachGiz[i] = childCnt;
+            if (i == 3) //blowup
+            {
+                int l = FindObjectsOfType<blowupFx>().Length;
+                numEachGiz[i][0] = l;
+                numEachGiz[i][1] = childCnt-l;
+            }
+            else //not blowup
+            {
+                numEachGiz[i][0] = childCnt;
+            }
             numGizs += childCnt;
         }
         BaseGizmo[] gizs = new BaseGizmo[numGizs];
@@ -125,6 +138,23 @@ public class EditorManager : MonoBehaviour
         {
             giz.CheckValues();
         }
+    }
+
+    public void TeleportPlayer(Transform pos)
+    {
+        CamMovement.player.transform.position = pos.position;
+    }
+    public void TeleportPlayerFirstGiz()
+    {
+        BaseGizmo giz = GetGizmos()[0];
+        Transform player = CamMovement.player.transform;
+        Transform cam = player.GetChild(0);
+        player.position = giz.transform.position + new Vector3(-1, 1, -1);
+        //player.LookAt(giz.transform.position);
+        cam.LookAt(giz.transform.position);
+        player.rotation = Quaternion.Euler(0, cam.eulerAngles.y,0);
+        cam.localRotation = Quaternion.Euler(cam.eulerAngles.x, 0, 0);
+        
     }
 
     PopupBtnFunction bufferFunction;

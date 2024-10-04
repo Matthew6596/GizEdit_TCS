@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 
 public class CamMovement : MonoBehaviour
 {
+    public static GameObject player;
+
     public float maxSpeed;
     public float acceleration;
     public float friction;
@@ -16,7 +18,7 @@ public class CamMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        player = gameObject;
     }
 
     // Update is called once per frame

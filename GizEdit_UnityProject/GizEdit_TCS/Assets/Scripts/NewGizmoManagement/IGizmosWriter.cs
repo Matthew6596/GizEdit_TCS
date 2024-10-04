@@ -5,5 +5,5 @@ using UnityEngine;
 public interface IGizmosWriter
 {
     public byte[][] headerBytes { get; set; }
-    public byte[] GetExtraHeaderStuff(int gizSection, int[] numOfEachGizmo);
+    public byte[] GetExtraHeaderStuff(int gizSection, int[][] numOfEachGizmo);
 }
