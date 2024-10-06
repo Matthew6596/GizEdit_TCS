@@ -25,7 +25,9 @@ public class BoolProp : GizProperty
     }
     public override void FromBin()
     {
-        SetValue(GameManager.ReadInt8() != 0);
+        byte tmp = GameManager.ReadInt8();
+        SetValue(tmp != 0);
+        if (tmp != 0) OnVal = tmp;
     }
     public Toggle Input { get; set; }
     public override void UpdateValue()

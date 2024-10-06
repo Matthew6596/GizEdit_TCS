@@ -19,6 +19,7 @@ public class BoolGroupProp : GizProperty
     {
         Names = names;
         Values = value;
+        SetValue(Values);
     }
     public override byte[] ToBin()
     {

@@ -21,7 +21,7 @@ public class GizForceChild : BaseGizmo
     public override void CheckValues()
     {
         name = GizProperties[0].GetValue<string>();
-        if (name == "") name = "UnnamedForceChild";
+        if (name == "") name = "Unnamed";
     }
     public override string GetGizType() { return "GizForceChild"; }
 

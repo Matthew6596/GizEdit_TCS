@@ -18,12 +18,16 @@ public class VarStringProp : GizProperty
     }
     public override byte[] ToBin()
     {
-        List<byte> ret = new();
         string str = (string)Value;
-        ret.Add((byte)str.Length);
+        if (str == "") return new byte[] { 0 };
+
+        List<byte> ret = new(),ret2=new();
         for (int i = 0; i < str.Length; i++) ret.Add((byte)str[i]);
+
         if (ret[^1] != 0) ret.Add(0);
-        return ret.ToArray();
+        ret2.Add((byte)ret.Count);
+        ret2.AddRange(ret);
+        return ret2.ToArray();
     }
     public override void FromBin()
     {

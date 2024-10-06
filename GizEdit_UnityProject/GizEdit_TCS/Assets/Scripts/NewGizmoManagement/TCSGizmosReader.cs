@@ -13,11 +13,14 @@ public class TCSGizmosReader : IGizmosReader
 
     public GameManager gm;
 
+    public static byte[][] versions { get; private set; }
+
     public TCSGizmosReader()
     {
         gm = GameManager.gmInstance;
         sectionReady = new bool[]{false,true,true, false, true, false, false, false, false, false, false, false, true, false, false, false, false};
         headerData = new byte[17][];
+        versions = new byte[17][];
     }
 
     public IEnumerator ReadGizmos()
@@ -68,6 +71,7 @@ public class TCSGizmosReader : IGizmosReader
             //Force
             case 2:
                 byte forceH = GameManager.ReadInt8();
+                versions[2] = new byte[] { forceH };
                 n.Add(GameManager.ReadInt16());
                 if (forceH != 16) Debug.LogWarning("Update to force header reader needed: " + forceH);
                 return n;
