@@ -1,9 +1,27 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.U2D.Aseprite;
 using UnityEngine;
 
 public class DisplaySetBlock : DefaultFileBlock
 {
+    enum DisplayCommandType
+    {
+        MTL = 0x80,
+        GEOMCALL = 0x82,
+        MTXLOAD = 0x83,
+        TERMINATE = 0x84,
+        MTL_CLIP = 0x85,
+        DUMMY = 0x87,
+        DYNAMIC_GEOMETRY = 0x8b,
+        END = 0x8e,
+        NEXT = 0x8d,
+        FACEON = 0x8f,
+        LIGHTMAP = 0xb0,
+        OTHER = 0x0
+    }
+
     public override void readFromFile(int blockSize, int blockId) //MOVE ALL THIS TO DISPLAY SET BLOCK ===================
     {
         base.readFromFile(blockSize, blockId);
@@ -11,7 +29,7 @@ public class DisplaySetBlock : DefaultFileBlock
         SceneLoader.ReadLocation = blockOffset + 0x4;
         int displayListLength = SceneLoader.reader.ReadInt32(); //get length
         int displayListPos = readPointer(); //get pos
-        //parseDisplayCommands(displayListPos); //parse commands
+        List<SceneMesh> displayCommandList = parseDisplayCommands(displayListPos); //parse commands
 
         SceneLoader.ReadLocation = blockOffset + 0x60;
         int staticDisplayObjectCount = SceneLoader.reader.ReadInt32();
@@ -23,7 +41,7 @@ public class DisplaySetBlock : DefaultFileBlock
         SceneLoader.ReadLocation = blockOffset + 0x10; //16 bytes after DISP?
         int gameModelCount = SceneLoader.reader.ReadInt32(); //get num models
         int gameModelPointer = readPointer();  //get pointer
-        parseGameModels(gameModelPointer, gameModelCount); //parse game models
+        parseGameModels(gameModelPointer, gameModelCount, displayCommandList); //parse game models
 
         SceneLoader.ReadLocation = blockOffset + 0x18;
         var modelSizeList = readPointer();
@@ -61,6 +79,76 @@ public class DisplaySetBlock : DefaultFileBlock
         //mapData.scene().modelInstances().addAll(analyzeCustomListForInstances()); //call function for model instances
     }
 
+    private List<SceneMesh> parseDisplayCommands(int commandListStart)
+    {
+        List<SceneMesh> displayCommands = new();
+        SceneLoader.ReadLocation = commandListStart;
+        int commandSize = 16; //size
+
+        int commandPtr = commandListStart;
+        int commandIndex = 0;
+        string ptrList = "";
+        while (true)
+        {
+            SceneLoader.ReadLocation = commandPtr;
+            byte commandType = SceneLoader.reader.ReadByte();
+            uint flags = SceneLoader.reader.ReadByte();
+
+            SceneLoader.ReadLocation = commandPtr + 4;
+            int resourcePtr = readPointer();
+            ptrList += resourcePtr + ", ";
+
+            if (commandType == (byte)DisplayCommandType.MTL_CLIP) flags = 0;
+            if (commandType == (byte)DisplayCommandType.DYNAMIC_GEOMETRY) flags = 0;
+            if (commandType == (byte)DisplayCommandType.END)
+            {
+                //mapData.scene().renderCommandList().add(new DisplayCommand(commandIndex, commandPtr, flags, DisplayCommandType.END, new UntypedCommandResource(resourcePtr, DisplayCommand.CommandType.END)));
+                displayCommands.Add(SceneLoader.GetSceneMeshByPtr(resourcePtr));
+                break;
+            }
+
+
+            //if (!mapData.scene().uniqueRenderCommands().containsKey(resourcePtr))
+            {
+                /*DisplayCommandResource <?> nextRenderCommand = switch (commandType)
+                {
+                    case MTXLOAD-> {
+                            fileBuffer.position(resourcePtr);
+                            var matrix = BufferUtil.readMatrix4f(fileBuffer);
+                            yield new MatrixCommandResource(resourcePtr, matrix);
+                        }
+                    case GEOMCALL->mapData.scene().meshes().get(resourcePtr);
+                    case MTL->mapData.scene().materials().get(resourcePtr);
+                    case LIGHTMAP-> {
+                            fileBuffer.position(resourcePtr);
+                            int type = fileBuffer.getInt();
+                            int lm = fileBuffer.getInt();
+                            int lm2 = fileBuffer.getInt();
+                            int lm3 = fileBuffer.getInt();
+                            int lm4 = fileBuffer.getInt();
+                            float xOffset = fileBuffer.getFloat();
+                            float yOffset = fileBuffer.getFloat();
+                            float zOffset = fileBuffer.getFloat();
+                            float wOffset = fileBuffer.getFloat();
+
+                            yield new LightmapCommandResource(resourcePtr, type, lm, lm2, lm3, lm4, xOffset, yOffset, zOffset, wOffset, mapData);
+
+                        }
+                    default -> {
+                            yield new UntypedCommandResource(resourcePtr, commandType);
+                        }
+                };
+                mapData.scene().uniqueRenderCommands().put(resourcePtr, nextRenderCommand);*/
+            }
+            displayCommands.Add(SceneLoader.GetSceneMeshByPtr(resourcePtr));
+            //mapData.scene().renderCommandList().add(new DisplayCommand(commandIndex, commandPtr, flags, commandType, mapData.scene().uniqueRenderCommands().get(resourcePtr)));
+            commandPtr += commandSize;
+            commandIndex++;
+        }
+        Debug.Log(ptrList);
+        return displayCommands;
+    }
+
     private List<SpecialObject> parseSpecialObjects(int specialObjectPos, int specialObjectSize)
     {
         List<SpecialObject> objs = new();
@@ -82,7 +170,7 @@ public class DisplaySetBlock : DefaultFileBlock
             short windShearFactor = SceneLoader.reader.ReadInt16();
             short windSpeedFactor = SceneLoader.reader.ReadInt16();
 
-            Debug.Log($"Special Object {stringAddr} model at {modelAddress}");
+            //Debug.Log($"Special Object {stringAddr} model at {modelAddress}");
 
             /*int index = get3ALA(fileBuffer,remoteIablAddress);
 
@@ -109,7 +197,7 @@ public class DisplaySetBlock : DefaultFileBlock
         return new IABLObject(localIablMatrix, new IABLObject.IABLBoundingBox(boundsPos, boundsSize, addr + 16 * 4), addr);
     }*/
 
-    private void parseGameModels(int gameModelPos, int gameModelCount)
+    private void parseGameModels(int gameModelPos, int gameModelCount, List<SceneMesh> displayCommands)
     {
         //var allCommands = mapData.scene().renderCommandList();
         //var materialsCopy = List.copyOf(mapData.scene().materials().values());
@@ -130,7 +218,7 @@ public class DisplaySetBlock : DefaultFileBlock
 
             int materialOffset = readPointer(); //matOffset = readPointer();
             int meshOffset = readPointer(); //meshOffset = readPointer();
-            Debug.Log($"{name} has {commandCount} cmds, mats at {materialOffset}, meshs at {meshOffset}");
+            //Debug.Log($"{name} has {commandCount} cmds, mats at {materialOffset}, meshs at {meshOffset}");
             //Initialize list for materials and meshes
             //List<FileMaterial> materials = new ArrayList<>();
             List<int> materials = new();
@@ -138,20 +226,26 @@ public class DisplaySetBlock : DefaultFileBlock
             List<int> renderableIndices = new();
 
             SceneLoader.ReadLocation = materialOffset; //ReadLocation = matoffset;
+            string debugStr = $"{name} mats:[";
             for (int j = 0; j < commandCount; j++) //for commandCount
             {
                 //might have to read materials block cuz normal maps and such
                 //materials.Add(materialsCopy.get(fileBuffer.getInt())); //get material, index at ReadInt()?
-                materials.Add(SceneLoader.reader.ReadInt32());
+                int matIndex = SceneLoader.reader.ReadInt32();
+                debugStr += matIndex + ",";
+                materials.Add(matIndex);
             }
-
+            debugStr += "], meshes:[";
             SceneLoader.ReadLocation = meshOffset; //ReadLocation = meshOffset;
             for (int j = 0; j < commandCount; j++) //for commandCount
             {
                 int renderableIndex = SceneLoader.reader.ReadInt32(); //meshIndex = ReadInt();
                 //var commandResource = allCommands.get(renderableIndex).command(); //idk, get command for mesh from meshIndex
-
+                debugStr += renderableIndex+",";
                 renderableIndices.Add(renderableIndex);
+                //NOTE, NOT MESH, COMMAND LIST --> try getting the renderCommandList[renderableIndex].command();
+                if (displayCommands[renderableIndex]!=null)
+                    displayCommands[renderableIndex].SetMaterial(SceneLoader.inst.materials[materials[j]]);
                 /*if (commandResource instanceof GSCMesh rc) {
                 if(commandResource is SceneMesh rc)
                     renderables.Add(rc); //add mesh to renderables list, get mesh from command?
@@ -161,7 +255,7 @@ public class DisplaySetBlock : DefaultFileBlock
                     renderables.Add(null); // is FACEON, investigate
                 }*/
             }
-
+            Debug.Log(debugStr+"]");
             /*var commands = IntStream.range(0, commandCount) //foreach command, make new model part with material[i] renderable[i]
                         .mapToObj(idx-> new GameModel.GameModelPart(materials.get(idx), renderables.get(idx), renderableIndices.get(idx)))
                         .collect(Collectors.toList());

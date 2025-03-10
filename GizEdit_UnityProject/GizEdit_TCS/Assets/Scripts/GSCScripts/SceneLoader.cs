@@ -22,6 +22,9 @@ public class SceneLoader : MonoBehaviour
     public static GSCScene sceneData;
     public static List<DefaultFileBlock> blocks = new();
 
+    public static List<SceneMesh> meshes = new();
+    public List<Material> materials = new();
+
     private void Awake()
     {
         inst = this;
@@ -135,7 +138,7 @@ public class SceneLoader : MonoBehaviour
                 else block = new DefaultFileBlock();
                 break;
             ///case "INID": new DINIBlock(); break;//idk
-            case "MS00": block = new MaterialSetBlock(); break;//want?
+            case "MS00": block = new MaterialBlock(); break;//want?
             ///case IABL_HEX_ID -> new IABLBlock();
             ///case ANIMATED_TEX_HEX_ID -> new AnimatedTextureBlock();
             default: block = new DefaultFileBlock(); break;
@@ -156,6 +159,12 @@ public class SceneLoader : MonoBehaviour
     {
         //LoadGSC();
     }
+
+    public static SceneMesh GetSceneMeshByPtr(int address)
+    {
+        foreach (SceneMesh mesh in meshes) if (mesh.fileIndex == address) return mesh;
+        return null;
+    }
 }
 
 
@@ -166,6 +175,10 @@ public static class BinaryReaderExt
         return new(reader.ReadVector4(), reader.ReadVector4(), reader.ReadVector4(), reader.ReadVector4());
     }
     public static Vector4 ReadVector4(this BinaryReader reader)
+    {
+        return new(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+    }
+    public static UnityEngine.Color ReadColorRGBA(this BinaryReader reader)
     {
         return new(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
     }

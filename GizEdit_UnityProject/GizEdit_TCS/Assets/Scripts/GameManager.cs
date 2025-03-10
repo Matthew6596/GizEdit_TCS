@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
     }
 
     public Material transparentTextureMaterial;
+    public Transform allMeshesParent;
 
     //PUBLIC VARS
     [NonSerialized]
@@ -47,6 +48,7 @@ public class GameManager : MonoBehaviour
 #if UNITY_STANDALONE_LINUX
             public IStandaloneFileBrowser FileBrowser = new StandaloneFileBrowserLinux();
 #endif
+    [NonSerialized]
     public string LastDirectory = System.IO.Directory.GetCurrentDirectory();
 
     public GameObject[] propPrefabs;

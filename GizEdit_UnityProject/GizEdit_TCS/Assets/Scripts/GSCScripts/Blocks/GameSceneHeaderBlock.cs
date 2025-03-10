@@ -15,11 +15,11 @@ public class GameSceneHeaderBlock : DefaultFileBlock
     {
         base.readFromFile(blockSize,blockId);
 
-        int texIndexList = readPointer(); //1240
+        int texIndexList = readPointer();
 
-        int texCount = SceneLoader.reader.ReadInt32(); //106
-        int texMetaPtr = readPointer(); //1656
-        int materialPtrList = readPointer(); //512
+        int texCount = SceneLoader.reader.ReadInt32();
+        int texMetaPtr = readPointer();
+        int materialPtrList = readPointer();
 
         //mapData.scene().materialListAddressFromGSNH().set(materialPtrList - blockOffset);
         //mapData.scene().texMetaListAddressFromGSNH().set(texMetaPtr - blockOffset);
@@ -30,20 +30,18 @@ public class GameSceneHeaderBlock : DefaultFileBlock
         // fileBuffer.position(0x28);
         // int meshMetaPtr = readFilePositionPlusOffset();
 
-        Debug.Log(blockOffset + 0x1d0);
-        SceneLoader.ReadLocation = blockOffset + 0x1d0; //14561932
-        SceneLoader.ReadLocation = readPointer(); //27928
+        SceneLoader.ReadLocation = blockOffset + 0x1d0;
+        SceneLoader.ReadLocation = readPointer();
 
-        int gscRenderableList = SceneLoader.ReadLocation; //27928
-        SceneLoader.ReadLocation = gscRenderableList + 0x10; //27944
+        int gscRenderableList = SceneLoader.ReadLocation;
+        SceneLoader.ReadLocation = gscRenderableList + 0x10;
 
-        int listStartAddr = readPointer(); //0 ??
-        Debug.Log(SceneLoader.ReadLocation+" List start?: " + listStartAddr);
+        int listStartAddr = readPointer();
+        //Debug.Log(SceneLoader.ReadLocation+" List start?: " + listStartAddr);
         int gscRenderableAmount = SceneLoader.reader.ReadInt32();
-        Debug.Log("RenderableAmt: " + gscRenderableAmount);
+        //Debug.Log("RenderableAmt: " + gscRenderableAmount);
         int gscListEndAddr = SceneLoader.reader.ReadInt32();
         int listEndAddr = listStartAddr + gscRenderableAmount * 4;
-
 
         for (int i = 0; i < gscRenderableAmount; i++)
         {
@@ -51,6 +49,7 @@ public class GameSceneHeaderBlock : DefaultFileBlock
             int meshAddr = readPointer();
             SceneMesh mesh = readMesh(meshAddr);
             meshes.Add(meshAddr, mesh);
+            SceneLoader.meshes.Add(mesh);
         }
 
         if (listEndAddr != gscListEndAddr)
@@ -58,7 +57,7 @@ public class GameSceneHeaderBlock : DefaultFileBlock
             Debug.LogWarning("Game scene header has unequal list ends for parts!");
         }
 
-        Debug.Log("[MESHES READ] "+gscRenderableAmount);
+        Debug.Log("[MESHES READ] "+SceneLoader.meshes.Count+"/"+gscRenderableAmount);
         //return;
         //mapData.scene().gscRenderableEndFromGSNH().set(listEndAddr - blockOffset);
         //mapData.scene().gscRenderableListFromGSNH().set(gscRenderableList - blockOffset);
@@ -104,12 +103,22 @@ public class GameSceneHeaderBlock : DefaultFileBlock
             {
                 realDescriptors.Add(new TextureDescriptor(descriptor.address, descriptor.w, descriptor.h, 0, i));
             }
+            else
+            {
+                realDescriptors.Add(null);
+            }
         }
 
         SceneLoader.ReadLocation = 0x6;
 
+        Debug.Log("NUM TEXTURES: " + realDescriptors.Count + "/" + texCount);
         foreach (TextureDescriptor descriptor in realDescriptors)
         {
+            if (descriptor == null)
+            {
+                SceneLoader.inst.textures.Add(Texture2D.blackTexture);
+                continue;
+            }
             int width = SceneLoader.reader.ReadInt32();
             int height = SceneLoader.reader.ReadInt32();
             SceneLoader.reader.ReadInt32();
@@ -199,7 +208,9 @@ public class GameSceneHeaderBlock : DefaultFileBlock
         //Debug.Log("Mesh vert/index/size offsets & counts: " + "[vert: " + vertexOffset + ", " + vertexCount + ", " + vertexSize + "] [index: " + indexOffset + "]");
 
         GameObject meshObj = new("msh" + SceneLoader.ReadLocation);
+        meshObj.transform.SetParent(GameManager.gm.allMeshesParent);
         SceneMesh mesh = meshObj.AddComponent<SceneMesh>();
+        mesh.fileIndex = ptr;
         mesh.PrepareLoad(new(triangleCount,vertexSize,vertexOffset,vertexCount,indexOffset,indexListID,vertexListID,useDynamicBuffer,dynamicBuffer));
         return mesh;
 

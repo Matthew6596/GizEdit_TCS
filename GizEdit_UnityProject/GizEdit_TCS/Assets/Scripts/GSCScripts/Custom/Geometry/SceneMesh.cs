@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class SceneMesh : MoveObj
 {
@@ -11,6 +12,9 @@ public class SceneMesh : MoveObj
     MeshCollider mCollider;
 
     public MeshInfo preloadInfo;
+    private Material preloadMat;
+
+    public int fileIndex;
 
     // Start is called before the first frame update
     void Start()
@@ -58,15 +62,22 @@ public class SceneMesh : MoveObj
         if(uvs!=null&&uvs.Length>0) mesh.SetUVs(0, uvs);
         mFilter.mesh = mesh;
         mCollider.sharedMesh = mesh;
-        if (texture == null) texture = SceneLoader.inst.textures[Random.Range(0, SceneLoader.inst.textures.Count)];
-        SetTexture(texture, texture.name.Contains("DXT3")||texture.name.Contains("DXT5"));
+        mRender.material = preloadMat;
+        //if (texture == null) texture = SceneLoader.inst.textures[Random.Range(0, SceneLoader.inst.textures.Count)];
+        //SetTexture(texture, texture.name.Contains("DXT3")||texture.name.Contains("DXT5"));
         //CreateSelection();
     }
 
     public void SetTexture(Texture texture,bool isTransparent=false)
     {
+        mRender.material = SceneLoader.inst.materials[Random.Range(0, SceneLoader.inst.materials.Count)];
+        return;
         txtr = texture;
         mRender.material = (isTransparent)?MaterialExt.GetStandardTransparent(texture):MaterialExt.GetStandard(texture);
+    }
+    public void SetMaterial(Material material)
+    {
+        preloadMat = material;
     }
     public Texture GetTexture()
     {
@@ -123,4 +134,16 @@ public static class MaterialExt
     public static Material GetUnlit(Texture texture) { return new(Shader.Find("Unlit/Texture")) { mainTexture=texture}; }
     public static Material GetStandard(Texture texture) { return new(Shader.Find("Standard")) { mainTexture=texture}; }
     public static Material GetStandardTransparent(Texture texture) { return new(GameManager.gm.transparentTextureMaterial) { mainTexture=texture}; }
+    public static Material GetStandard(Texture mainTexture, Texture normalTexture, Texture specularTexture, Color color)
+    {
+        Material mat = new(Shader.Find("Standard")) { mainTexture = mainTexture,color=color };
+        mat.SetTexture("_BumpMap", normalTexture);
+        return mat;
+    }
+    public static Material GetStandardTransparent(Texture mainTexture, Texture normalTexture, Texture specularTexture, Color color)
+    {
+        Material mat = new(GameManager.gm.transparentTextureMaterial) { mainTexture = mainTexture, color = color };
+        mat.SetTexture("_BumpMap", normalTexture);
+        return mat;
+    }
 }

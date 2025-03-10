@@ -1072,6 +1072,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 774346726}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &794278703
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 794278704}
+  m_Layer: 0
+  m_Name: MESHES
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &794278704
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 794278703}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -22.531078, y: -5.795496, z: 13.266323}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &909293064
 GameObject:
   m_ObjectHideFlags: 0
@@ -1102,6 +1133,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textures: []
+  materials: []
 --- !u!4 &909293066
 Transform:
   m_ObjectHideFlags: 0
@@ -4410,6 +4442,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   transparentTextureMaterial: {fileID: 2100000, guid: 6d859d1207140da4aa3fb889806d0a24, type: 2}
+  allMeshesParent: {fileID: 794278704}
   LastDirectory: C:\Users\Matthew\Documents\UnityProjects\GizEdit_TCS\GizEdit_TCS\GizEdit_UnityProject\GizEdit_TCS
   propPrefabs: []
   propertyPanel: {fileID: 0}
@@ -4441,3 +4474,4 @@ SceneRoots:
   - {fileID: 1526628342}
   - {fileID: 1951071359}
   - {fileID: 909293066}
+  - {fileID: 794278704}
