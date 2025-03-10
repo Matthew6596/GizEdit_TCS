@@ -16,7 +16,7 @@ public class NTBLReader : MonoBehaviour
 
     public void ReadTable()
     {
-        byte[] bytes = GameManager.gmInstance.gscBytes;
+        byte[] bytes = GameManager.gm.gscBytes;
         int headIndex = 0;
         for(int i=0; i < bytes.Length; i++) //Locate the header
         {

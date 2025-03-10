@@ -2,23 +2,41 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Drawing;
 using UnityEngine;
+using System.Drawing.Imaging;
 
 public class SceneLoader : MonoBehaviour
 {
+    public static SceneLoader inst;
+
     public static int pntrLocation=-1;
 
     public static int ReadLocation { get { return (int)reader.BaseStream.Position; } set { reader.BaseStream.Position = value; } }
     public static BinaryReader reader;
+    public static byte[] bytes;
 
-    public static List<Texture2D> textures = new();
+    public List<Texture2D> textures = new();
     public static Dictionary<int,Texture2D> texturesDict = new();
 
-    public void LoadGSC()
-    {
-        byte[] gscBytes = GameManager.gmInstance.gscBytes;
-        MemoryStream ms = new (gscBytes);
+    public static GSCScene sceneData;
+    public static List<DefaultFileBlock> blocks = new();
 
+    private void Awake()
+    {
+        inst = this;
+    }
+
+    private void Start()
+    {
+        GSCScene.LoadFromFile();
+    }
+
+    public static void LoadGSC(byte[] bytes, GSCScene sceneData)
+    {
+        SceneLoader.sceneData = sceneData;
+        SceneLoader.bytes = bytes;
+        MemoryStream ms = new (bytes);
         reader = new BinaryReader(ms);
 
         //preparing int vars
@@ -28,27 +46,40 @@ public class SceneLoader : MonoBehaviour
         //cache clearing
         //
 
+        ReadLocation = 0;
         nu20Start = reader.ReadInt32() + 4;
 
-        reader.BaseStream.Position = nu20Start + 0x18;
+        ReadLocation = nu20Start + 0x18;
 
-        pntrLocation = ReadLocation + reader.ReadInt32(); //pntrLocation = ReadLocation + file.ReadInt();
-        headerLocation = ReadLocation + reader.ReadInt32(); //headerLocation = ReadLocation + file.ReadInt();
+        pntrLocation = ReadLocation + reader.ReadInt32();
+        headerLocation = ReadLocation + reader.ReadInt32();
 
         ReadLocation = pntrLocation;
         parsePNTRValues(ms);
 
         ReadLocation = headerLocation-8;
         loadBlock(true);
-        ReadLocation = nu20Start + 0x20; //ReadLocation = nu20Start+0x20;
+        ReadLocation = nu20Start + 0x20;
 
-        while (ReadLocation<gscBytes.Length) //Keep reading entire file till at end
+        while (ReadLocation<bytes.Length) //Keep reading entire file till at end
             if (!loadBlock(false)) break; //Read Blocks (break if error)
 
         reader.Dispose();
         Debug.Log("[Done Reading .gsc]");
+
+        foreach (DefaultFileBlock block in blocks)
+        {
+            if (block is GameSceneHeaderBlock gscBlock)
+            {
+                GameManager.gm.DelayAction(() =>
+                {
+                    gscBlock.FinishLoading();
+                    Debug.Log("[Done Loading Meshes]");
+                });
+            }
+        }
     }
-    private void parsePNTRValues(MemoryStream ms)
+    private static void parsePNTRValues(MemoryStream ms)
     {
         int numPntr = reader.ReadInt32();
         for (int i = 0; i < numPntr; i++)
@@ -70,12 +101,11 @@ public class SceneLoader : MonoBehaviour
                 ms.WriteByte(writeBytes[2]);
                 ms.WriteByte(writeBytes[3]);
             }
-            //fileBuffer.putInt(ptr, ptr + offset); //huh?!
 
-            ReadLocation = pos;
+            ReadLocation = pos+4; //gonna cry i forgot "+4" like months ago and gave up cause it wansnt loading right
         }
     }
-    private bool loadBlock(bool loadGameScene)
+    private static bool loadBlock(bool loadGameScene)
     {
         int savePtr = ReadLocation; //savePtr = ReadLocation;
         int blockId = reader.ReadInt32(); //blockId = file.ReadInt();
@@ -105,7 +135,7 @@ public class SceneLoader : MonoBehaviour
                 else block = new DefaultFileBlock();
                 break;
             ///case "INID": new DINIBlock(); break;//idk
-            ///case "MS00": new MaterialBlock(); break;//want?
+            case "MS00": block = new MaterialSetBlock(); break;//want?
             ///case IABL_HEX_ID -> new IABLBlock();
             ///case ANIMATED_TEX_HEX_ID -> new AnimatedTextureBlock();
             default: block = new DefaultFileBlock(); break;
@@ -117,12 +147,30 @@ public class SceneLoader : MonoBehaviour
 
         //Add blockObj to mapData
         //mapData.scene().blocks().put(blockName, new NU2MapData.SceneData.Block(savePtr, blockSize));
+        blocks.Add(block);
         return true;
     }
 
     //Public Method called after Open Gsc btn pressed
-    public void LoadGscMesh()
+    public static void LoadGscMesh()
     {
-        LoadGSC();
+        //LoadGSC();
+    }
+}
+
+
+public static class BinaryReaderExt
+{
+    public static Matrix4x4 ReadMatrix4(this BinaryReader reader)
+    {
+        return new(reader.ReadVector4(), reader.ReadVector4(), reader.ReadVector4(), reader.ReadVector4());
+    }
+    public static Vector4 ReadVector4(this BinaryReader reader)
+    {
+        return new(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+    }
+    public static Vector3 ReadVector3(this BinaryReader reader)
+    {
+        return new(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
     }
 }

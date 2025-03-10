@@ -68,16 +68,16 @@ public class ChildListProp : GizProperty
     }
     public override void CreateInEditor(Transform contentArea=null)
     {
-        if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
+        if (contentArea == null) contentArea = GameManager.gm.propertyPanelContent;
 
         //Create prop prefab
-        GameObject.Instantiate(GameManager.gmInstance.propPrefabs[7], contentArea); //adding spacing
-        GameObject.Instantiate(GameManager.gmInstance.propPrefabs[7], contentArea);
-        GameObject.Instantiate(GameManager.gmInstance.propPrefabs[7], contentArea);
-        EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[1], contentArea);
-        GameObject.Instantiate(GameManager.gmInstance.propPrefabs[7], contentArea); //adding spacing
-        GameObject.Instantiate(GameManager.gmInstance.propPrefabs[7], contentArea);
-        GameObject.Instantiate(GameManager.gmInstance.propPrefabs[7], contentArea);
+        GameObject.Instantiate(GameManager.gm.propPrefabs[7], contentArea); //adding spacing
+        GameObject.Instantiate(GameManager.gm.propPrefabs[7], contentArea);
+        GameObject.Instantiate(GameManager.gm.propPrefabs[7], contentArea);
+        EditorInstance = GameObject.Instantiate(GameManager.gm.propPrefabs[1], contentArea);
+        GameObject.Instantiate(GameManager.gm.propPrefabs[7], contentArea); //adding spacing
+        GameObject.Instantiate(GameManager.gm.propPrefabs[7], contentArea);
+        GameObject.Instantiate(GameManager.gm.propPrefabs[7], contentArea);
         //Get Inputs
         ChildrenParent = EditorInstance.transform.GetChild(0).GetChild(0).GetChild(0);
         Input = ChildrenParent.GetChild(1).GetChild(1).GetComponent<TMP_Dropdown>();

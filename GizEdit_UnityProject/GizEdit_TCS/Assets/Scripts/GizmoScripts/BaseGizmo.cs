@@ -34,7 +34,7 @@ abstract public class BaseGizmo : MonoBehaviour
     }
     public void CreateInEditor()
     {
-        foreach (GizProperty prop in GizProperties) prop.CreateInEditor(GameManager.gmInstance.propertyPanelContent);
+        foreach (GizProperty prop in GizProperties) prop.CreateInEditor(GameManager.gm.propertyPanelContent);
     }
     public void DestroyInEditor()
     {

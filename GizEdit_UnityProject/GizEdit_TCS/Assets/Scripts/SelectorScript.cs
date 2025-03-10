@@ -21,7 +21,7 @@ public class SelectorScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        gm = GameManager.gmInstance;
+        gm = GameManager.gm;
     }
 
     public void QuitApp()

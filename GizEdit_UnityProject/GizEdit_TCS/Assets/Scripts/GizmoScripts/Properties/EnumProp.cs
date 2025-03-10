@@ -42,8 +42,8 @@ public class EnumProp : GizProperty
     }
     public override void CreateInEditor(Transform contentArea = null)
     {
-        if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
-        EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[2], contentArea);
+        if (contentArea == null) contentArea = GameManager.gm.propertyPanelContent;
+        EditorInstance = GameObject.Instantiate(GameManager.gm.propPrefabs[2], contentArea);
         Input = EditorInstance.transform.GetChild(1).GetComponent<TMP_Dropdown>();
         List<TMP_Dropdown.OptionData> options=new();
         Input.ClearOptions();

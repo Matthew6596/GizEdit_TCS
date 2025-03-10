@@ -7,6 +7,8 @@ public class AdvMouseInput : MonoBehaviour
 {
     public static AdvMouseInput instance;
     public static Vector3 GetMoveGizPos() { return instance.moveGiz.GetChild(0).position; }
+    private Vector3 _selectOffset;
+    public static Vector3 GetSelectOffset() { return instance._selectOffset; }
 
     public Vector3 worldPos;
     public float planeOffset;
@@ -76,7 +78,7 @@ public class AdvMouseInput : MonoBehaviour
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit))
             {
                 GameObject hitObj = hit.transform.gameObject;
-                if (hitObj.CompareTag("editorGiz"))
+                if (hitObj.CompareTag("editorGiz")) //move gizmo was clicked
                 {
                     moving = true;
                     //Get giz axis
@@ -91,8 +93,29 @@ public class AdvMouseInput : MonoBehaviour
                         worldPos = ray.GetPoint(distance);
                     }
                     //Offset Children
-                    moveGiz.GetChild(0).localPosition = 10*MultiplyVec3s(moveGiz.position-worldPos, axisLock);
+                    _selectOffset = 10 * MultiplyVec3s(moveGiz.position - worldPos, axisLock);
+                    moveGiz.GetChild(0).localPosition = _selectOffset;
                 }
+                else 
+                {
+                    if (hit.transform.gameObject.GetComponent<SelectObj>() != null)
+                    {
+                        SelectObj.Deselect();
+                        MoveObj.Deselect();
+                        hit.transform.gameObject.GetComponent<SelectObj>().MainSelect();
+                    }
+                    if (hit.transform.gameObject.GetComponent<MoveObj>() != null)
+                    {
+                        //Note: not deselecting select obj, imagine selecting a model (SelectObj), then a vertex (MoveObj)
+                        MoveObj.Deselect();
+                        hit.transform.gameObject.GetComponent<MoveObj>().Select();
+                    }
+                }
+            }
+            else
+            {
+                SelectObj.Deselect();
+                MoveObj.Deselect();
             }
         }
         else

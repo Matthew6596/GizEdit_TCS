@@ -32,8 +32,8 @@ public class Int32Prop : GizProperty
     }
     public override void CreateInEditor(Transform contentArea = null)
     {
-        if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
-        EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[4], contentArea);
+        if (contentArea == null) contentArea = GameManager.gm.propertyPanelContent;
+        EditorInstance = GameObject.Instantiate(GameManager.gm.propPrefabs[4], contentArea);
         Input = EditorInstance.transform.GetChild(1).GetComponent<TMP_InputField>();
         Input.text = Value.ToString();
         Input.characterLimit = 11;

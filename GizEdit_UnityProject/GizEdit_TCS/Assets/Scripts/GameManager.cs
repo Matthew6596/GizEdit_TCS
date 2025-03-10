@@ -9,21 +9,23 @@ using SFB;
 public class GameManager : MonoBehaviour
 {
     //Persist through scenes
-    public static GameObject instance;
-    public static GameManager gmInstance;
+    public static GameObject inst;
+    public static GameManager gm;
     void Awake()
     {
-        if (instance != null)
+        if (inst != null)
         {
             Destroy(gameObject);
         }
         else
         {
-            instance = gameObject;
-            gmInstance = this;
-            DontDestroyOnLoad(instance);
+            inst = gameObject;
+            gm = this;
+            DontDestroyOnLoad(inst);
         }
     }
+
+    public Material transparentTextureMaterial;
 
     //PUBLIC VARS
     [NonSerialized]
@@ -33,8 +35,19 @@ public class GameManager : MonoBehaviour
     [NonSerialized]
     public byte[] gscBytes;
 
-    //CHANGE FOR MAC / LINUX
+    //WIN
+#if UNITY_STANDALONE_WIN
     public IStandaloneFileBrowser FileBrowser = new StandaloneFileBrowserWindows();
+#endif
+    //MAC
+#if UNITY_STANDALONE_OSX
+            public IStandaloneFileBrowser FileBrowser = StandaloneFileBrowserMac();
+#endif
+    //LINUX
+#if UNITY_STANDALONE_LINUX
+            public IStandaloneFileBrowser FileBrowser = new StandaloneFileBrowserLinux();
+#endif
+    public string LastDirectory = System.IO.Directory.GetCurrentDirectory();
 
     public GameObject[] propPrefabs;
     public GameObject propertyPanel;
@@ -53,29 +66,29 @@ public class GameManager : MonoBehaviour
 
 
     //NEW FILE READ METHODS
-    public static byte ReadInt8() { GizmosReader.reader.ReadLocation++; return gmInstance.bytes[GizmosReader.reader.ReadLocation - 1]; }
+    public static byte ReadInt8() { GizmosReader.reader.ReadLocation++; return gm.bytes[GizmosReader.reader.ReadLocation - 1]; }
     public static short ReadInt16() 
     { 
         GizmosReader.reader.ReadLocation += 2; 
-        return BitConverter.ToInt16(gmInstance.bytes, GizmosReader.reader.ReadLocation - 2); 
+        return BitConverter.ToInt16(gm.bytes, GizmosReader.reader.ReadLocation - 2); 
     }
     public static int ReadInt32() 
     { 
         GizmosReader.reader.ReadLocation += 4; 
-        return BitConverter.ToInt32(gmInstance.bytes, GizmosReader.reader.ReadLocation - 4);
+        return BitConverter.ToInt32(gm.bytes, GizmosReader.reader.ReadLocation - 4);
     }
     public static float ReadFloat() 
     { 
         GizmosReader.reader.ReadLocation += 4; 
-        return BitConverter.ToSingle(gmInstance.bytes, GizmosReader.reader.ReadLocation - 4); 
+        return BitConverter.ToSingle(gm.bytes, GizmosReader.reader.ReadLocation - 4); 
     }
     public static string ReadString()
     {
-        byte len = gmInstance.bytes[GizmosReader.reader.ReadLocation]; GizmosReader.reader.ReadLocation++;
+        byte len = gm.bytes[GizmosReader.reader.ReadLocation]; GizmosReader.reader.ReadLocation++;
         string ret = "";
         for(int i=0; i<len; i++)
         {
-            ret += (char)gmInstance.bytes[GizmosReader.reader.ReadLocation];
+            ret += (char)gm.bytes[GizmosReader.reader.ReadLocation];
             GizmosReader.reader.ReadLocation++;
         }
         return ret;
@@ -85,7 +98,7 @@ public class GameManager : MonoBehaviour
         string ret = "";
         for (int i = 0; i < len; i++)
         {
-            ret += (char)gmInstance.bytes[GizmosReader.reader.ReadLocation];
+            ret += (char)gm.bytes[GizmosReader.reader.ReadLocation];
             GizmosReader.reader.ReadLocation++;
         }
         return ret;
@@ -95,7 +108,7 @@ public class GameManager : MonoBehaviour
     {
         List<byte> ret = new();
         for (int i = 0; i < len; i++, GizmosReader.reader.ReadLocation++)
-            ret.Add(gmInstance.bytes[GizmosReader.reader.ReadLocation]);
+            ret.Add(gm.bytes[GizmosReader.reader.ReadLocation]);
         return ret.ToArray();
     }
 

@@ -39,9 +39,9 @@ public class AngleProp : GizProperty
     }
     public override void CreateInEditor(Transform contentArea = null)
     {
-        if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
+        if (contentArea == null) contentArea = GameManager.gm.propertyPanelContent;
 
-        EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[3], contentArea);
+        EditorInstance = GameObject.Instantiate(GameManager.gm.propPrefabs[3], contentArea);
         Input = EditorInstance.transform.GetChild(1).GetComponent<TMP_InputField>();
         Input.text = Value.ToString();
         EditorInstance.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = Name;

@@ -34,7 +34,7 @@ public class EditorManager : MonoBehaviour
     public static void ThrowError(string errorMsg)
     {
         //create error popup
-        GameObject popup = GameManager.gmInstance.defaultPopup;
+        GameObject popup = GameManager.gm.defaultPopup;
         popup.transform.GetChild(0).GetChild(1).gameObject.GetComponent<TMP_Text>().text = "Error";
         popup.transform.GetChild(1).GetComponent<TMP_Text>().text = errorMsg;
         popup.SetActive(true);
@@ -65,18 +65,18 @@ public class EditorManager : MonoBehaviour
         moveGizmo.gameObject.SetActive(true);
         PreviousGizmo = SelectedGizmo;
         SelectedGizmo = giz;
-        if (!GameManager.gmInstance.propertyPanel.activeSelf) GameManager.gmInstance.propertyPanel.SetActive(true);
+        if (!GameManager.gm.propertyPanel.activeSelf) GameManager.gm.propertyPanel.SetActive(true);
         ClearPropPanel();
         SelectedGizmo.GetComponent<BaseGizmo>().CreateInEditor();
         moveGizmo.position = SelectedGizmo.transform.position;
     }
     private void ClearPropPanel()
     {
-        if (GameManager.gmInstance.propertyPanelContent.childCount > 0)
+        if (GameManager.gm.propertyPanelContent.childCount > 0)
         {
-            for (int i = GameManager.gmInstance.propertyPanelContent.childCount - 1; i > 0; i--)
+            for (int i = GameManager.gm.propertyPanelContent.childCount - 1; i > 0; i--)
             {
-                Destroy(GameManager.gmInstance.propertyPanelContent.GetChild(i).gameObject);
+                Destroy(GameManager.gm.propertyPanelContent.GetChild(i).gameObject);
             }
         }
     }

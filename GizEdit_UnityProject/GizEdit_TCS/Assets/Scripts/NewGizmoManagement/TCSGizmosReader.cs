@@ -17,7 +17,7 @@ public class TCSGizmosReader : IGizmosReader
 
     public TCSGizmosReader()
     {
-        gm = GameManager.gmInstance;
+        gm = GameManager.gm;
         sectionReady = new bool[]{false,true,true, false, true, false, false, false, false, false, false, false, true, false, false, false, false};
         headerData = new byte[17][];
         versions = new byte[17][];

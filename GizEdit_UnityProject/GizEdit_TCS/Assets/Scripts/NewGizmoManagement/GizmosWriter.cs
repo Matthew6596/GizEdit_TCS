@@ -13,7 +13,7 @@ public class GizmosWriter : MonoBehaviour
     private void Start()
     {
         instance = this;
-        gm = GameManager.gmInstance;
+        gm = GameManager.gm;
 
         writer = new TCSGizmosWriter();
     }

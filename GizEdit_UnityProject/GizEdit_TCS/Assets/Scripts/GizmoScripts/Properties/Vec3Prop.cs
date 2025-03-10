@@ -67,8 +67,8 @@ public class Vec3Prop : GizProperty
     }
     public override void CreateInEditor(Transform contentArea=null)
     {
-        if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
-        EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[6], contentArea);
+        if (contentArea == null) contentArea = GameManager.gm.propertyPanelContent;
+        EditorInstance = GameObject.Instantiate(GameManager.gm.propPrefabs[6], contentArea);
         Inputs = new TMP_InputField[3];
         Inputs[0] = EditorInstance.transform.GetChild(1).gameObject.GetComponent<TMP_InputField>();
         Inputs[1] = EditorInstance.transform.GetChild(2).gameObject.GetComponent<TMP_InputField>();

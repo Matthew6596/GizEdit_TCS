@@ -15,7 +15,7 @@ public class GizmosReader : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        gm = GameManager.gmInstance;
+        gm = GameManager.gm;
         instance = this;
 
         reader = new TCSGizmosReader(); //temp - TCS default
@@ -45,7 +45,7 @@ public class GizmosReader : MonoBehaviour
         if (path.Length != 0)
         {
             LastReadPath = path;
-            GameManager.gmInstance.bytes = System.IO.File.ReadAllBytes(path);
+            GameManager.gm.bytes = System.IO.File.ReadAllBytes(path);
             StartCoroutine(reader.ReadGizmos());
         }
         else
@@ -64,7 +64,7 @@ public class GizmosReader : MonoBehaviour
         if (path.Length != 0)
         {
             LastReadPath = path;
-            GameManager.gmInstance.gscBytes = System.IO.File.ReadAllBytes(path);
+            GameManager.gm.gscBytes = System.IO.File.ReadAllBytes(path);
             NTBLReader.inst.ReadTable();
         }
         else

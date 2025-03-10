@@ -59,8 +59,8 @@ public class HexProp : GizProperty
     }
     public override void CreateInEditor(Transform contentArea=null)
     {
-        if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
-        EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[5], contentArea);
+        if (contentArea == null) contentArea = GameManager.gm.propertyPanelContent;
+        EditorInstance = GameObject.Instantiate(GameManager.gm.propPrefabs[5], contentArea);
         Input = EditorInstance.transform.GetChild(1).GetComponent<TMP_InputField>();
         Input.text = (string)Value;
         Input.characterLimit = Length;

@@ -60,7 +60,7 @@ public class BoolGroupProp : GizProperty
     }
     public override void CreateInEditor(Transform contentArea = null) //<<<<EDITORINSTANCE NEEDS UPDATING, MAKE PARENT FOR GROUP
     {
-        if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
+        if (contentArea == null) contentArea = GameManager.gm.propertyPanelContent;
 
         GameObject[] insts = new GameObject[8];
         Toggle[] inps = new Toggle[8];
@@ -68,7 +68,7 @@ public class BoolGroupProp : GizProperty
         {
             if (ValueActive[i])
             {
-                insts[i] = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[0], contentArea);
+                insts[i] = GameObject.Instantiate(GameManager.gm.propPrefabs[0], contentArea);
                 inps[i] = insts[i].transform.GetChild(1).GetComponent<Toggle>();
                 inps[i].isOn = Values[i];
                 insts[i].transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = Names[i];

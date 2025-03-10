@@ -36,8 +36,8 @@ public class BoolProp : GizProperty
     }
     public override void CreateInEditor(Transform contentArea = null)
     {
-        if (contentArea == null) contentArea = GameManager.gmInstance.propertyPanelContent;
-        EditorInstance = GameObject.Instantiate(GameManager.gmInstance.propPrefabs[0], contentArea);
+        if (contentArea == null) contentArea = GameManager.gm.propertyPanelContent;
+        EditorInstance = GameObject.Instantiate(GameManager.gm.propPrefabs[0], contentArea);
         Input = EditorInstance.transform.GetChild(1).GetComponent<Toggle>();
         Input.isOn = (bool)Value;
         EditorInstance.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = Name;
