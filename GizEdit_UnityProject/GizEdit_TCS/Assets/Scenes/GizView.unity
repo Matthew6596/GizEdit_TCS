@@ -4513,6 +4513,37 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 8586714804038685384, guid: 2e80a89a05910124c893b2a852957477, type: 3}
   m_PrefabInstance: {fileID: 6033292145244784867}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &450631480
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 450631481}
+  m_Layer: 0
+  m_Name: MESHES
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &450631481
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450631480}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -22.531078, y: -5.795496, z: 13.266323}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &466569155
 GameObject:
   m_ObjectHideFlags: 0
@@ -5293,6 +5324,18 @@ MonoBehaviour:
       - m_Target: {fileID: 1068422547}
         m_TargetAssemblyTypeName: GizmosReader, Assembly-CSharp
         m_MethodName: OpenGizFile
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1690637547}
+        m_TargetAssemblyTypeName: SceneLoader, Assembly-CSharp
+        m_MethodName: LoadGscMesh
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -12936,6 +12979,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbf37ce5ac34a1b468064e8468ed05a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  textures: []
+  materials: []
 --- !u!224 &1074189651 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3044737284933098641, guid: c8a05e5db41e1e6499b551f7a31035cf, type: 3}
@@ -21535,6 +21580,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1675681121}
   m_CullTransparentMesh: 1
+--- !u!1 &1690637546
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1690637548}
+  - component: {fileID: 1690637547}
+  m_Layer: 0
+  m_Name: GSCLOADER
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1690637547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1690637546}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf37ce5ac34a1b468064e8468ed05a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textures: []
+  materials: []
+--- !u!4 &1690637548
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1690637546}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 13.369943, y: -0.20119977, z: 28.881252}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1704982715
 GameObject:
   m_ObjectHideFlags: 0
@@ -26863,6 +26954,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1308994638}
     - target: {fileID: 4102351966974188802, guid: 3c75dd928247db943a7b3d4181b75913, type: 3}
+      propertyPath: allMeshesParent
+      value: 
+      objectReference: {fileID: 450631481}
+    - target: {fileID: 4102351966974188802, guid: 3c75dd928247db943a7b3d4181b75913, type: 3}
       propertyPath: propertyPanelContent
       value: 
       objectReference: {fileID: 1445974400}
@@ -26902,6 +26997,10 @@ PrefabInstance:
       propertyPath: propPrefabs.Array.data[7]
       value: 
       objectReference: {fileID: 1720890200921888784, guid: 4a2c779f65b037441afb18ebb4883ac2, type: 3}
+    - target: {fileID: 4102351966974188802, guid: 3c75dd928247db943a7b3d4181b75913, type: 3}
+      propertyPath: transparentTextureMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: 6d859d1207140da4aa3fb889806d0a24, type: 2}
     - target: {fileID: 7864156002944769824, guid: 3c75dd928247db943a7b3d4181b75913, type: 3}
       propertyPath: m_Name
       value: GameManager
@@ -27157,3 +27256,5 @@ SceneRoots:
   - {fileID: 1596191334}
   - {fileID: 662972627}
   - {fileID: 2017231821}
+  - {fileID: 1690637548}
+  - {fileID: 450631481}

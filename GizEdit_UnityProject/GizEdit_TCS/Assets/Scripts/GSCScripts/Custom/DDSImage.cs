@@ -28,6 +28,22 @@ using System.Text;
 
 namespace KUtility {
 	public class DDSImage {
+
+		public class Order
+		{
+			public byte alphaShift, redShift, greenShift, blueShift;
+			public Order(byte a, byte r, byte g, byte b)
+			{
+				alphaShift = a;
+				redShift = r;
+				greenShift = g;
+				blueShift = b;
+			}
+		}
+
+		public static Order ARGB = new Order(16, 8, 0, 24);
+		public static Order ABGR = new Order(0, 8, 16, 24);
+
 		private const int DDPF_ALPHAPIXELS = 0x00000001;
 		private const int DDPF_ALPHA = 0x00000002;
 		private const int DDPF_FOURCC = 0x00000004;
@@ -105,7 +121,6 @@ namespace KUtility {
 			throw new Exception(string.Format("0x{0} texture compression not implemented.", header.ddspf.dwFourCC.ToString("X")));
 		}
 
-		//private static int callCtr = 0;
 		public static Bitmap ReadDDSFromGSC(byte[] bytes,ref int index,out string extension)
         {
 			extension = "";
@@ -118,16 +133,25 @@ namespace KUtility {
 
 			index += 80;
 			extension = Encoding.UTF8.GetString(bytes, index, 4);
-			
-			//callCtr++;
-            switch (extension)
+
+			int bitCount = BitConverter.ToInt32(bytes, index + 4);
+			int[] masks = new int[4]
+			{
+					BitConverter.ToInt32(bytes,index+8),
+					BitConverter.ToInt32(bytes,index+12),
+					BitConverter.ToInt32(bytes,index+16),
+					BitConverter.ToInt32(bytes,index+20),
+			};
+
+			switch (extension)
             {
 				case "DXT1": return UncompressDXT1(bytes.Skip(index + 4 + 40).ToArray(), width, height, ref index);
-				case "DXT3":
-					//UnityEngine.Debug.Log("DXT3 at " + callCtr);
-					return UncompressDXT3(bytes.Skip(index + 4 + 40).ToArray(), width, height, ref index);
+				case "DXT3": return UncompressDXT3(bytes.Skip(index + 4 + 40).ToArray(), width, height, ref index);
                 case "DXT5": return UncompressDXT5(bytes.Skip(index + 4 + 40).ToArray(), width, height,ref index);
-				default: throw new NotSupportedException($"Cannot determine DDS type {extension}, try checking the file manually at: {index}");
+				default:
+					Bitmap bmp = ReadOtherTypes(bitCount, masks[0], masks[1], masks[2], masks[3], bytes, width, height, index+44,out extension);
+					if(bmp==null) throw new NotSupportedException($"Cannot determine DDS type {extension}, try checking the file manually at: {index}");
+					return bmp;
             }
         }
 
@@ -518,6 +542,289 @@ namespace KUtility {
 			p.dwBBitMask = r.ReadInt32();
 			p.dwABitMask = r.ReadInt32();
 		}
+
+		private static Bitmap ReadOtherTypes(int bitCount, int redMask, int greenMask, int blueMask, int alphaMask, byte[] buffer, int w, int h, int offset, out string ext)
+		{
+			int[] pixels;
+			if (bitCount == 16)
+			{
+				if (redMask == A1R5G5B5_MASKS[0] && greenMask == A1R5G5B5_MASKS[1] && blueMask == A1R5G5B5_MASKS[2] && alphaMask == A1R5G5B5_MASKS[3])
+				{
+					// A1R5G5B5
+					pixels = readA1R5G5B5(w, h, offset, buffer, ARGB);
+					ext = "DXT5";
+				}
+				else if (redMask == X1R5G5B5_MASKS[0] && greenMask == X1R5G5B5_MASKS[1] && blueMask == X1R5G5B5_MASKS[2] && alphaMask == X1R5G5B5_MASKS[3])
+				{
+					// X1R5G5B5
+					pixels = readX1R5G5B5(w, h, offset, buffer, ARGB);
+                    ext = "DXT1";
+                }
+				else if (redMask == A4R4G4B4_MASKS[0] && greenMask == A4R4G4B4_MASKS[1] && blueMask == A4R4G4B4_MASKS[2] && alphaMask == A4R4G4B4_MASKS[3])
+				{
+					// A4R4G4B4
+					pixels = readA4R4G4B4(w, h, offset, buffer, ARGB);
+                    ext = "DXT5";
+                }
+				else if (redMask == X4R4G4B4_MASKS[0] && greenMask == X4R4G4B4_MASKS[1] && blueMask == X4R4G4B4_MASKS[2] && alphaMask == X4R4G4B4_MASKS[3])
+				{
+					// X4R4G4B4
+					pixels = readX4R4G4B4(w, h, offset, buffer, ARGB);
+                    ext = "DXT1";
+                }
+				else if (redMask == R5G6B5_MASKS[0] && greenMask == R5G6B5_MASKS[1] && blueMask == R5G6B5_MASKS[2] && alphaMask == R5G6B5_MASKS[3])
+				{
+					// R5G6B5
+					pixels = readR5G6B5(w, h, offset, buffer, ARGB);
+                    ext = "DXT1";
+                }
+				else
+				{
+					pixels = readA1R5G5B5(w, h, offset, buffer, ARGB);
+                    // Unsupported 16bit RGB image
+                    //pixels = new int[0];
+                    ext = "DXT5";
+                }
+			}
+			else if (bitCount == 24)
+			{
+				if (redMask == R8G8B8_MASKS[0] && greenMask == R8G8B8_MASKS[1] && blueMask == R8G8B8_MASKS[2] && alphaMask == R8G8B8_MASKS[3])
+				{
+					// R8G8B8
+					pixels = readR8G8B8(w, h, offset, buffer, ARGB);
+                    ext = "DXT1";
+                }
+				else
+				{
+					// Unsupported 24bit RGB image
+					//pixels = new int[0];
+					pixels = readR8G8B8(w, h, offset, buffer, ARGB);
+                    ext = "DXT1";
+                }
+			}
+			else if (bitCount == 32)
+			{
+				if (redMask == A8B8G8R8_MASKS[0] && greenMask == A8B8G8R8_MASKS[1] && blueMask == A8B8G8R8_MASKS[2] && alphaMask == A8B8G8R8_MASKS[3])
+				{
+					// A8B8G8R8
+					pixels = readA8B8G8R8(w, h, offset, buffer, ARGB);
+                    ext = "DXT5";
+                }
+				else if (redMask == X8B8G8R8_MASKS[0] && greenMask == X8B8G8R8_MASKS[1] && blueMask == X8B8G8R8_MASKS[2] && alphaMask == X8B8G8R8_MASKS[3])
+				{
+					// X8B8G8R8
+					pixels = readX8B8G8R8(w, h, offset, buffer, ARGB);
+                    ext = "DXT1";
+                }
+				else if (redMask == A8R8G8B8_MASKS[0] && greenMask == A8R8G8B8_MASKS[1] && blueMask == A8R8G8B8_MASKS[2] && alphaMask == A8R8G8B8_MASKS[3])
+				{
+					// A8R8G8B8
+					pixels = readA8R8G8B8(w, h, offset, buffer, ARGB);
+                    ext = "DXT5";
+                }
+				else if (redMask == X8R8G8B8_MASKS[0] && greenMask == X8R8G8B8_MASKS[1] && blueMask == X8R8G8B8_MASKS[2] && alphaMask == X8R8G8B8_MASKS[3])
+				{
+					// X8R8G8B8
+					pixels = readX8R8G8B8(w, h, offset, buffer, ARGB);
+                    ext = "DXT1";
+                }
+				else
+				{
+					// Unsupported 32bit RGB image
+					//pixels = new int[0];
+					pixels = readA8R8G8B8(w, h, offset, buffer, ARGB);
+                    ext = "DXT5";
+                }
+			}
+			else
+			{
+                ext = "fail";
+                return null;
+			}
+
+			return pixelsToBitmap(pixels, w, h);
+		}
+
+		private static int[] readA1R5G5B5(int width, int height, int offset, byte[] buffer, Order order)
+		{
+			int index = offset;
+			int[] pixels = new int[width * height];
+			for (int i = 0; i < height * width; i++)
+			{
+				int rgba = (buffer[index] & 0xFF) | (buffer[index + 1] & 0xFF) << 8; index += 2;
+				int r = BIT5[(rgba & A1R5G5B5_MASKS[0]) >> 10];
+				int g = BIT5[(rgba & A1R5G5B5_MASKS[1]) >> 5];
+				int b = BIT5[(rgba & A1R5G5B5_MASKS[2])];
+				int a = 255 * ((rgba & A1R5G5B5_MASKS[3]) >> 15);
+				pixels[i] = (a << order.alphaShift) | (r << order.redShift) | (g << order.greenShift) | (b << order.blueShift);
+			}
+			return pixels;
+		}
+
+		private static int[] readX1R5G5B5(int width, int height, int offset, byte[] buffer, Order order)
+		{
+			int index = offset;
+			int[] pixels = new int[width * height];
+			for (int i = 0; i < height * width; i++)
+			{
+				int rgba = (buffer[index] & 0xFF) | (buffer[index + 1] & 0xFF) << 8; index += 2;
+				int r = BIT5[(rgba & X1R5G5B5_MASKS[0]) >> 10];
+				int g = BIT5[(rgba & X1R5G5B5_MASKS[1]) >> 5];
+				int b = BIT5[(rgba & X1R5G5B5_MASKS[2])];
+				int a = 255;
+				pixels[i] = (a << order.alphaShift) | (r << order.redShift) | (g << order.greenShift) | (b << order.blueShift);
+			}
+			return pixels;
+		}
+
+		private static int[] readA4R4G4B4(int width, int height, int offset, byte[] buffer, Order order)
+		{
+			int index = offset;
+			int[] pixels = new int[width * height];
+			for (int i = 0; i < height * width; i++)
+			{
+				int rgba = (buffer[index] & 0xFF) | (buffer[index + 1] & 0xFF) << 8; index += 2;
+				int r = 17 * ((rgba & A4R4G4B4_MASKS[0]) >> 8);
+				int g = 17 * ((rgba & A4R4G4B4_MASKS[1]) >> 4);
+				int b = 17 * ((rgba & A4R4G4B4_MASKS[2]));
+				int a = 17 * ((rgba & A4R4G4B4_MASKS[3]) >> 12);
+				pixels[i] = (a << order.alphaShift) | (r << order.redShift) | (g << order.greenShift) | (b << order.blueShift);
+			}
+			return pixels;
+		}
+
+		private static int[] readX4R4G4B4(int width, int height, int offset, byte[] buffer, Order order)
+		{
+			int index = offset;
+			int[] pixels = new int[width * height];
+			for (int i = 0; i < height * width; i++)
+			{
+				int rgba = (buffer[index] & 0xFF) | (buffer[index + 1] & 0xFF) << 8; index += 2;
+				int r = 17 * ((rgba & A4R4G4B4_MASKS[0]) >> 8);
+				int g = 17 * ((rgba & A4R4G4B4_MASKS[1]) >> 4);
+				int b = 17 * ((rgba & A4R4G4B4_MASKS[2]));
+				int a = 255;
+				pixels[i] = (a << order.alphaShift) | (r << order.redShift) | (g << order.greenShift) | (b << order.blueShift);
+			}
+			return pixels;
+		}
+
+		private static int[] readR5G6B5(int width, int height, int offset, byte[] buffer, Order order)
+		{
+			int index = offset;
+			int[] pixels = new int[width * height];
+			for (int i = 0; i < height * width; i++)
+			{
+				int rgba = (buffer[index] & 0xFF) | (buffer[index + 1] & 0xFF) << 8; index += 2;
+				int r = BIT5[((rgba & R5G6B5_MASKS[0]) >> 11)];
+				int g = BIT6[((rgba & R5G6B5_MASKS[1]) >> 5)];
+				int b = BIT5[((rgba & R5G6B5_MASKS[2]))];
+				int a = 255;
+				pixels[i] = (a << order.alphaShift) | (r << order.redShift) | (g << order.greenShift) | (b << order.blueShift);
+			}
+			return pixels;
+		}
+
+		private static int[] readR8G8B8(int width, int height, int offset, byte[] buffer, Order order)
+		{
+			int index = offset;
+			int[] pixels = new int[width * height];
+			for (int i = 0; i < height * width; i++)
+			{
+				int b = buffer[index++] & 0xFF;
+				int g = buffer[index++] & 0xFF;
+				int r = buffer[index++] & 0xFF;
+				int a = 255;
+				pixels[i] = (a << order.alphaShift) | (r << order.redShift) | (g << order.greenShift) | (b << order.blueShift);
+			}
+			return pixels;
+		}
+
+		private static int[] readA8B8G8R8(int width, int height, int offset, byte[] buffer, Order order)
+		{
+			int index = offset;
+			int[] pixels = new int[width * height];
+			for (int i = 0; i < height * width; i++)
+			{
+				int r = buffer[index++] & 0xFF;
+				int g = buffer[index++] & 0xFF;
+				int b = buffer[index++] & 0xFF;
+				int a = buffer[index++] & 0xFF;
+				pixels[i] = (a << order.alphaShift) | (r << order.redShift) | (g << order.greenShift) | (b << order.blueShift);
+			}
+			return pixels;
+		}
+
+		private static int[] readX8B8G8R8(int width, int height, int offset, byte[] buffer, Order order)
+		{
+			int index = offset;
+			int[] pixels = new int[width * height];
+			for (int i = 0; i < height * width; i++)
+			{
+				int r = buffer[index++] & 0xFF;
+				int g = buffer[index++] & 0xFF;
+				int b = buffer[index++] & 0xFF;
+				int a = 255; index++;
+				pixels[i] = (a << order.alphaShift) | (r << order.redShift) | (g << order.greenShift) | (b << order.blueShift);
+			}
+			return pixels;
+		}
+
+		private static int[] readA8R8G8B8(int width, int height, int offset, byte[] buffer, Order order)
+		{
+			int index = offset;
+			int[] pixels = new int[width * height];
+			for (int i = 0; i < height * width; i++)
+			{
+				int b = buffer[index++] & 0xFF;
+				int g = buffer[index++] & 0xFF;
+				int r = buffer[index++] & 0xFF;
+				int a = buffer[index++] & 0xFF;
+				pixels[i] = (a << order.alphaShift) | (r << order.redShift) | (g << order.greenShift) | (b << order.blueShift);
+			}
+			return pixels;
+		}
+
+		private static int[] readX8R8G8B8(int width, int height, int offset, byte[] buffer, Order order)
+		{
+			int index = offset;
+			int[] pixels = new int[width * height];
+			for (int i = 0; i < height * width; i++)
+			{
+				int b = buffer[index++] & 0xFF;
+				int g = buffer[index++] & 0xFF;
+				int r = buffer[index++] & 0xFF;
+				int a = 255; index++;
+				pixels[i] = (a << order.alphaShift) | (r << order.redShift) | (g << order.greenShift) | (b << order.blueShift);
+			}
+			return pixels;
+		}
+
+		private static Bitmap pixelsToBitmap(int[] pixels, int w, int h)
+		{
+			Bitmap bmp = new Bitmap(w, h);
+			for (int i = 0; i < h; i++)
+			{
+				for (int j = 0; j < w; j++)
+				{
+					bmp.SetPixel(j, i, Color.FromArgb(pixels[j + i * w]));
+				}
+			}
+			return bmp;
+		}
+
+		private static int[] A1R5G5B5_MASKS = { 0x7C00, 0x03E0, 0x001F, 0x8000 };
+		private static int[] X1R5G5B5_MASKS = { 0x7C00, 0x03E0, 0x001F, 0x0000 };
+		private static int[] A4R4G4B4_MASKS = { 0x0F00, 0x00F0, 0x000F, 0xF000 };
+		private static int[] X4R4G4B4_MASKS = { 0x0F00, 0x00F0, 0x000F, 0x0000 };
+		private static int[] R5G6B5_MASKS = { 0xF800, 0x07E0, 0x001F, 0x0000 };
+		private static int[] R8G8B8_MASKS = { 0xFF0000, 0x00FF00, 0x0000FF, 0x000000 };
+		private static int[] A8B8G8R8_MASKS = { 0x000000FF, 0x0000FF00, 0x00FF0000, unchecked((int)0xFF000000) };
+		private static int[] X8B8G8R8_MASKS = { 0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000 };
+		private static int[] A8R8G8B8_MASKS = { 0x00FF0000, 0x0000FF00, 0x000000FF, unchecked((int)0xFF000000) };
+		private static int[] X8R8G8B8_MASKS = { 0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000 };
+		private static int[] BIT5 = { 0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
+		private static int[] BIT6 = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138, 142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255 };
 	}
 
 	class DDS_HEADER {

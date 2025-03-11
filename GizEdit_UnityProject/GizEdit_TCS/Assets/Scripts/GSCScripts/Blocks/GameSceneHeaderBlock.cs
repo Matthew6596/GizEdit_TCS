@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Security.Authentication.ExtendedProtection.Configuration;
 using UnityEngine;
+using static Unity.Burst.Intrinsics.X86.Avx;
 
 public class GameSceneHeaderBlock : DefaultFileBlock
 {
@@ -156,20 +158,41 @@ public class GameSceneHeaderBlock : DefaultFileBlock
             .flip();(*/
 
         int temp = 0;
-        Bitmap ddsTexture = KUtility.DDSImage.ReadDDSFromGSC(img, ref temp, out string ext);
-        MemoryStream ddsMs = new();
-        ddsTexture.Save(ddsMs, ddsTexture.RawFormat);
-        Texture2D newTxtr = new(ddsTexture.Width, ddsTexture.Height);
-        newTxtr.LoadImage(ddsMs.ToArray());
-        newTxtr.name = "texture_" + ext;
+        Bitmap ddsTexture=null;
+        string ext=extension;
+        try
+        {
+            ddsTexture = KUtility.DDSImage.ReadDDSFromGSC(img, ref temp, out ext);
+        }catch(NotSupportedException nse)
+        {
+            Debug.LogError("Unsupported DDS file: " + nse.Message);
+        }
+
+        if (ddsTexture != null) 
+        {
+            MemoryStream ddsMs = new();
+            ddsTexture.Save(ddsMs, ddsTexture.RawFormat);
+            Texture2D newTxtr = new(ddsTexture.Width, ddsTexture.Height);
+            newTxtr.LoadImage(ddsMs.ToArray());
+            newTxtr.name = "texture_" + ext;
+
+            SceneLoader.inst.textures.Add(newTxtr);
+            SceneLoader.texturesDict.Add(descriptor.trueIndex, newTxtr);
+        }
+        else //handling for texture that failed to read
+        {
+            Texture2D fakeTxtr = Texture2D.whiteTexture;
+            fakeTxtr.name = "texture_DXT1_fake";
+            SceneLoader.inst.textures.Add(fakeTxtr);
+            SceneLoader.texturesDict.Add(descriptor.trueIndex, fakeTxtr);
+        }
 
         SceneLoader.ReadLocation += descriptor.size;
 
         //Texture2D texture = Texture2D.grayTexture;
         //var texture = new FileTexture(name, image, textureStart, fileBuffer.position(), descriptor); //Creating texture
 
-        SceneLoader.inst.textures.Add(newTxtr);
-        SceneLoader.texturesDict.Add(descriptor.trueIndex, newTxtr);
+        
     }
 
     private TextureDescriptor readTextureDescriptor()

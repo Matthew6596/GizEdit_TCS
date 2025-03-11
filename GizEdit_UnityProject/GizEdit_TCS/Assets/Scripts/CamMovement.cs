@@ -35,7 +35,7 @@ public class CamMovement : MonoBehaviour
 
         velocity *= friction;
 
-        velocity = Vector3.ClampMagnitude(velocity, maxSpeed);
+        velocity = Vector3.ClampMagnitude(velocity, acceleration*maxSpeed);
 
         transform.Translate(velocity * Time.deltaTime);
     }
@@ -58,5 +58,18 @@ public class CamMovement : MonoBehaviour
     {
         rightClicking = ctx.performed;
         if(rightClicking)velocity = Vector3.zero;
+    }
+
+    private float mult = 1;
+    private bool prevScrollPositive = false;
+    public void mouseScroll(InputAction.CallbackContext ctx)
+    {
+        float val = ctx.ReadValue<float>() / 500f; //aprox. scroll step?
+        if (val == 0) return;
+
+        mult = ((acceleration>1)?.05f:1) * Mathf.Pow(acceleration, 2);
+
+        acceleration += val*mult;
+        acceleration = Mathf.Clamp(acceleration, 0.01f, 20);
     }
 }

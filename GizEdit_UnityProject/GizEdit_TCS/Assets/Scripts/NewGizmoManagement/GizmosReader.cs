@@ -1,6 +1,7 @@
 using SFB;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -21,7 +22,7 @@ public class GizmosReader : MonoBehaviour
         reader = new TCSGizmosReader(); //temp - TCS default
     }
 
-    public void OpenGizFile()
+    public void OpenGizFile(string file="")
     {
         //Clear current giz file
         /*int len = EditorManager.GizmoParentNames.Length;
@@ -36,21 +37,29 @@ public class GizmosReader : MonoBehaviour
                 for (int k = _psc - 1; k >= 0; k--) Destroy(_ps[j].GetChild(k).gameObject);
             }
         }*/
-
-        var extensions = new[] {
-            new ExtensionFilter("Gizmo Files", new string[]{"GIZ","giz","Giz"}),
-        };
-        string[] paths = gm.FileBrowser.OpenFilePanel("Gizmo File Search", "", extensions, false);
-        string path = (paths.Length > 0) ? paths[0] : "";
-        if (path.Length != 0)
+        if (file != string.Empty)
         {
-            LastReadPath = path;
-            GameManager.gm.bytes = System.IO.File.ReadAllBytes(path);
+            LastReadPath = file;
+            GameManager.gm.bytes = System.IO.File.ReadAllBytes(file);
             StartCoroutine(reader.ReadGizmos());
         }
         else
         {
-            Debug.Log("No file selected");
+            var extensions = new[] {
+            new ExtensionFilter("Gizmo Files", new string[]{"GIZ","giz","Giz"}),
+            };
+            string[] paths = gm.FileBrowser.OpenFilePanel("Gizmo File Search", "", extensions, false);
+            string path = (paths.Length > 0) ? paths[0] : "";
+            if (path.Length != 0)
+            {
+                LastReadPath = path;
+                GameManager.gm.bytes = System.IO.File.ReadAllBytes(path);
+                StartCoroutine(reader.ReadGizmos());
+            }
+            else
+            {
+                Debug.Log("No file selected");
+            }
         }
     }
 

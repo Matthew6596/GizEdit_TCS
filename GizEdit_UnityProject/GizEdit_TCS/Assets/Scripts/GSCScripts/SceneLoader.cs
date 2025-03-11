@@ -32,7 +32,7 @@ public class SceneLoader : MonoBehaviour
 
     private void Start()
     {
-        GSCScene.LoadFromFile();
+        //GSCScene.LoadFromFile();
     }
 
     public static void LoadGSC(byte[] bytes, GSCScene sceneData)
@@ -158,6 +158,7 @@ public class SceneLoader : MonoBehaviour
     public static void LoadGscMesh()
     {
         //LoadGSC();
+        GSCScene.LoadFromFile();
     }
 
     public static SceneMesh GetSceneMeshByPtr(int address)
